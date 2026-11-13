@@ -1,2 +1,88 @@
-
 @import "tailwindcss";
+
+/* Font: tambahkan di index.html (lihat di bawah) */
+
+@theme {
+  /* Tipografi */
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand: pink */
+  --color-brand-50:  #fff1f6;
+  --color-brand-100: #ffe0ec;
+  --color-brand-200: #ffc2d9;
+  --color-brand-300: #ff94bb;
+  --color-brand-400: #ff5c98;
+  --color-brand-500: #f43f85;
+  --color-brand-600: #d9226b;
+  --color-brand-700: #b4165a;
+  --color-brand-900: #6b0d36;
+
+  /* Pemasukan / sukses: hijau */
+  --color-income-50:  #effcf4;
+  --color-income-100: #d8f7e4;
+  --color-income-400: #3ed081;
+  --color-income-500: #1fb86a;
+  --color-income-600: #14965a;
+  --color-income-700: #0f7548;
+
+  /* Pengeluaran: coral (sengaja beda dari pink brand) */
+  --color-expense-50:  #fff4ee;
+  --color-expense-100: #ffe5d6;
+  --color-expense-400: #ff8a5c;
+  --color-expense-500: #f4693a;
+  --color-expense-600: #d94f24;
+
+  /* Status anggaran */
+  --color-warn-100: #fff3c4;
+  --color-warn-500: #f2a900;
+  --color-warn-700: #946400;
+  --color-danger-100: #ffdcdc;
+  --color-danger-500: #e5484d;
+  --color-danger-700: #a82a2f;
+
+  /* Radius & bayangan */
+  --radius-card: 1.25rem;
+  --radius-control: 0.875rem;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(244 63 133 / 0.06);
+}
+
+/* Token semantik yang berubah antara light & dark */
+:root {
+  --surface-page: #fff8fb;
+  --surface-card: #ffffff;
+  --surface-muted: #fdf0f5;
+  --border-subtle: #f3dde6;
+  --text-primary: #2a1620;
+  --text-secondary: #7a5c6a;
+  color-scheme: light;
+}
+
+.dark {
+  --surface-page: #170d12;
+  --surface-card: #231620;
+  --surface-muted: #2e1d27;
+  --border-subtle: #3d2a35;
+  --text-primary: #fbeef3;
+  --text-secondary: #b99aa9;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-page: var(--surface-page);
+  --color-card: var(--surface-card);
+  --color-muted: var(--surface-muted);
+  --color-line: var(--border-subtle);
+  --color-ink: var(--text-primary);
+  --color-ink-soft: var(--text-secondary);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+body {
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Angka sejajar untuk nominal uang */
+.tabular { font-variant-numeric: tabular-nums; }
