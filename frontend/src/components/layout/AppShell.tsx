@@ -6,7 +6,7 @@ import {
   Receipt,
   Wallet,
 } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/cn'
 
@@ -26,19 +26,23 @@ const sidebarLinks: SidebarLink[] = [
 
 function navClassName({ isActive }: { isActive: boolean }) {
   return cn(
-    'inline-flex min-h-11 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium text-ink-soft transition-colors',
+    'inline-flex min-h-11 items-center gap-3 rounded-[var(--radius-control)] px-3 text-sm font-medium text-ink-soft transition duration-200 active:scale-[0.98]',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
     isActive && 'bg-brand-50 text-brand-700 dark:bg-muted dark:text-ink',
   )
 }
 
 function bottomNavClassName({ isActive }: { isActive: boolean }) {
   return cn(
-    'flex min-h-11 min-w-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-control)] text-[11px] font-medium text-ink-soft',
+    'relative flex min-h-11 min-w-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-[var(--radius-control)] text-[11px] font-medium text-ink-soft transition duration-200 active:scale-[0.98]',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
     isActive && 'text-brand-700 dark:text-ink',
   )
 }
 
 export function AppShell() {
+  const { pathname } = useLocation()
+
   return (
     <div className="flex min-h-dvh bg-page text-ink">
       <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-line bg-card px-4 py-6 lg:flex">
@@ -52,7 +56,7 @@ export function AppShell() {
         <nav className="flex flex-1 flex-col gap-1" aria-label="Menu utama">
           {sidebarLinks.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className={navClassName}>
-              <Icon className="size-5 shrink-0" aria-hidden />
+              <Icon size={20} strokeWidth={1.75} className="shrink-0" aria-hidden />
               {label}
             </NavLink>
           ))}
@@ -75,7 +79,9 @@ export function AppShell() {
             'pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:px-8 lg:pb-8',
           )}
         >
-          <Outlet />
+          <div key={pathname} className="animate-pop-in">
+            <Outlet />
+          </div>
         </main>
 
         <nav
@@ -86,8 +92,19 @@ export function AppShell() {
             <NavLink to="/" end className={bottomNavClassName}>
               {({ isActive }) => (
                 <>
+                  <span
+                    className={cn(
+                      'absolute top-0 h-0.5 w-6 rounded-full bg-brand-500 transition duration-200',
+                      isActive
+                        ? 'scale-x-100 opacity-100'
+                        : 'scale-x-50 opacity-0',
+                    )}
+                    aria-hidden
+                  />
                   <Home
-                    className={cn('size-5', isActive && 'text-brand-600')}
+                    size={20}
+                    strokeWidth={1.75}
+                    className={cn(isActive && 'text-brand-600')}
                     aria-hidden
                   />
                   Beranda
@@ -98,8 +115,19 @@ export function AppShell() {
             <NavLink to="/transaksi" className={bottomNavClassName}>
               {({ isActive }) => (
                 <>
+                  <span
+                    className={cn(
+                      'absolute top-0 h-0.5 w-6 rounded-full bg-brand-500 transition duration-200',
+                      isActive
+                        ? 'scale-x-100 opacity-100'
+                        : 'scale-x-50 opacity-0',
+                    )}
+                    aria-hidden
+                  />
                   <Receipt
-                    className={cn('size-5', isActive && 'text-brand-600')}
+                    size={20}
+                    strokeWidth={1.75}
+                    className={cn(isActive && 'text-brand-600')}
                     aria-hidden
                   />
                   Transaksi
@@ -113,17 +141,28 @@ export function AppShell() {
                 aria-label="Catat transaksi"
                 // TODO: buka form catat transaksi
                 onClick={() => {}}
-                className="-mt-5 inline-flex size-14 items-center justify-center rounded-full bg-brand-500 text-white shadow-[var(--shadow-card)] transition-transform active:scale-[0.98]"
+                className="-mt-5 inline-flex size-14 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_8px_20px_color-mix(in_srgb,var(--color-brand-500)_35%,transparent)] transition duration-200 hover:scale-105 hover:bg-brand-600 hover:shadow-[0_10px_28px_color-mix(in_srgb,var(--color-brand-500)_45%,transparent)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-card"
               >
-                <Plus className="size-7" aria-hidden />
+                <Plus size={28} strokeWidth={1.75} aria-hidden />
               </button>
             </div>
 
             <NavLink to="/anggaran" className={bottomNavClassName}>
               {({ isActive }) => (
                 <>
+                  <span
+                    className={cn(
+                      'absolute top-0 h-0.5 w-6 rounded-full bg-brand-500 transition duration-200',
+                      isActive
+                        ? 'scale-x-100 opacity-100'
+                        : 'scale-x-50 opacity-0',
+                    )}
+                    aria-hidden
+                  />
                   <PiggyBank
-                    className={cn('size-5', isActive && 'text-brand-600')}
+                    size={20}
+                    strokeWidth={1.75}
+                    className={cn(isActive && 'text-brand-600')}
                     aria-hidden
                   />
                   Anggaran
@@ -134,8 +173,19 @@ export function AppShell() {
             <NavLink to="/lainnya" className={bottomNavClassName}>
               {({ isActive }) => (
                 <>
+                  <span
+                    className={cn(
+                      'absolute top-0 h-0.5 w-6 rounded-full bg-brand-500 transition duration-200',
+                      isActive
+                        ? 'scale-x-100 opacity-100'
+                        : 'scale-x-50 opacity-0',
+                    )}
+                    aria-hidden
+                  />
                   <MoreHorizontal
-                    className={cn('size-5', isActive && 'text-brand-600')}
+                    size={20}
+                    strokeWidth={1.75}
+                    className={cn(isActive && 'text-brand-600')}
                     aria-hidden
                   />
                   Lainnya

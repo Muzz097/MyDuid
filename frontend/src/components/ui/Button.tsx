@@ -38,8 +38,8 @@ export function Button({
       type={type}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-transform active:scale-[0.98] disabled:opacity-60 disabled:pointer-events-none',
-        'rounded-[var(--radius-control)]',
+        'inline-flex items-center justify-center font-medium transition duration-200 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-60',
+        'rounded-[var(--radius-control)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
         variantClass[variant],
         sizeClass[size],
         fullWidth && 'w-full',

@@ -22,7 +22,8 @@ export function Chip({
       onClick={onClick}
       aria-pressed={selected}
       className={cn(
-        'inline-flex min-h-10 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition-colors',
+        'inline-flex min-h-10 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition duration-200 active:scale-[0.98]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
         selected ? 'bg-brand-500 text-white' : 'bg-muted text-ink',
         className,
       )}

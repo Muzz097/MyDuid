@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
@@ -38,10 +39,16 @@ const statusConfig: Record<
 }
 
 export function ProgressBar({ value, max, label, className }: ProgressBarProps) {
+  const [ready, setReady] = useState(false)
   const percent = max > 0 ? (value / max) * 100 : 0
   const status = getStatus(percent)
   const { label: statusLabel, barClass, Icon } = statusConfig[status]
   const barWidth = Math.min(percent, 100)
+
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => setReady(true))
+    return () => window.cancelAnimationFrame(id)
+  }, [])
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
@@ -58,8 +65,11 @@ export function ProgressBar({ value, max, label, className }: ProgressBarProps) 
           className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"
         >
           <div
-            className={cn('h-full rounded-full transition-[width]', barClass)}
-            style={{ width: `${barWidth}%` }}
+            className={cn(
+              'h-full rounded-full transition-[width] duration-700 ease-soft',
+              barClass,
+            )}
+            style={{ width: ready ? `${barWidth}%` : '0%' }}
           />
         </div>
         <span
@@ -70,7 +80,7 @@ export function ProgressBar({ value, max, label, className }: ProgressBarProps) 
             status === 'over' && 'text-danger-700',
           )}
         >
-          <Icon className="size-4" aria-hidden />
+          <Icon size={18} strokeWidth={1.75} aria-hidden />
           {statusLabel}
         </span>
       </div>

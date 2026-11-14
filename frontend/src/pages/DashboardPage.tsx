@@ -1,13 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { Cell, Pie, PieChart, ResponsiveContainer } from 'recharts'
 import { Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { budgets, categories, transactions, wallets } from '@/mocks/data'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useCountUp } from '@/hooks/useCountUp'
+import { cn } from '@/lib/cn'
+import { getIcon } from '@/lib/icons'
 import { formatCompact } from '@/lib/money'
 import { monthSummary, totalBalance } from '@/lib/summary'
-import type { Wallet } from '@/types'
+import { budgets, categories, transactions, wallets } from '@/mocks/data'
 
 const PIE_COLORS = [
   'var(--color-expense-500)',
@@ -15,12 +18,6 @@ const PIE_COLORS = [
   'var(--color-warn-500)',
   'var(--color-brand-400)',
 ]
-
-const walletEmoji: Record<Wallet['type'], string> = {
-  cash: '💵',
-  bank: '🏦',
-  ewallet: '📱',
-}
 
 function formatShortDate(iso: string): string {
   const date = new Date(`${iso}T00:00:00`)
@@ -46,17 +43,39 @@ function expenseByCategory() {
       return {
         categoryId,
         name: category?.name ?? 'Lainnya',
-        emoji: category?.emoji ?? '•',
+        iconKey: category?.iconKey ?? 'default',
         amount,
       }
     })
     .sort((a, b) => b.amount - a.amount)
 }
 
+function DashboardSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-busy="true">
+      <Skeleton className="h-28 lg:col-span-2" />
+      <div className="grid grid-cols-2 gap-4 lg:col-span-2">
+        <Skeleton className="h-24" />
+        <Skeleton className="h-24" />
+      </div>
+      <div className="flex gap-3 lg:col-span-2">
+        <Skeleton className="h-28 w-44 shrink-0" />
+        <Skeleton className="h-28 w-44 shrink-0" />
+        <Skeleton className="h-28 w-44 shrink-0" />
+      </div>
+      <Skeleton className="h-48" />
+      <Skeleton className="h-48" />
+      <Skeleton className="h-64 lg:col-span-2" />
+    </div>
+  )
+}
+
 export function DashboardPage() {
   const [balanceHidden, setBalanceHidden] = useState(false)
+  const [loading, setLoading] = useState(true)
   const now = new Date()
   const balance = totalBalance(wallets)
+  const animatedBalance = useCountUp(loading ? 0 : balance)
   const { income, expense } = monthSummary(
     transactions,
     now.getFullYear(),
@@ -70,15 +89,27 @@ export function DashboardPage() {
   const categoryById = new Map(categories.map((c) => [c.id, c]))
   const walletById = new Map(wallets.map((w) => [w.id, w]))
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setLoading(false), 600)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  if (loading) {
+    return <DashboardSkeleton />
+  }
+
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {/* a. Hero saldo */}
-      <Card className="lg:col-span-2">
+      <Card
+        className="animate-fade-up lg:col-span-2"
+        style={{ animationDelay: '0ms' }}
+      >
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-2">
             <p className="text-sm text-ink-soft">Total saldo</p>
             <MoneyText
-              amount={balance}
+              amount={animatedBalance}
               type="neutral"
               hidden={balanceHidden}
               className="text-3xl"
@@ -87,20 +118,43 @@ export function DashboardPage() {
           <button
             type="button"
             aria-label={balanceHidden ? 'Tampilkan saldo' : 'Sembunyikan saldo'}
+            aria-pressed={balanceHidden}
             onClick={() => setBalanceHidden((v) => !v)}
-            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition-colors hover:bg-muted"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition duration-200 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           >
-            {balanceHidden ? (
-              <EyeOff className="size-5" aria-hidden />
-            ) : (
-              <Eye className="size-5" aria-hidden />
-            )}
+            <span className="relative inline-flex size-5">
+              <Eye
+                size={20}
+                strokeWidth={1.75}
+                aria-hidden
+                className={cn(
+                  'absolute inset-0 transition duration-200',
+                  balanceHidden
+                    ? 'rotate-90 opacity-0'
+                    : 'rotate-0 opacity-100',
+                )}
+              />
+              <EyeOff
+                size={20}
+                strokeWidth={1.75}
+                aria-hidden
+                className={cn(
+                  'absolute inset-0 transition duration-200',
+                  balanceHidden
+                    ? 'rotate-0 opacity-100'
+                    : '-rotate-90 opacity-0',
+                )}
+              />
+            </span>
           </button>
         </div>
       </Card>
 
       {/* b. Ringkasan bulan */}
-      <div className="grid grid-cols-2 gap-4 lg:col-span-2">
+      <div
+        className="animate-fade-up grid grid-cols-2 gap-4 lg:col-span-2"
+        style={{ animationDelay: '70ms' }}
+      >
         <Card>
           <p className="text-sm text-ink-soft">Pemasukan bulan ini</p>
           <MoneyText
@@ -122,30 +176,42 @@ export function DashboardPage() {
       </div>
 
       {/* c. Carousel dompet */}
-      <section className="lg:col-span-2" aria-label="Dompet">
+      <section
+        className="animate-fade-up lg:col-span-2"
+        style={{ animationDelay: '140ms' }}
+        aria-label="Dompet"
+      >
         <h2 className="mb-3 text-base font-semibold text-ink">Dompet</h2>
         <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {wallets.map((wallet) => (
-            <Card
-              key={wallet.id}
-              className="w-44 shrink-0 snap-start p-4"
-            >
-              <div className="mb-3 inline-flex size-10 items-center justify-center rounded-full bg-muted text-lg">
-                {walletEmoji[wallet.type]}
-              </div>
-              <p className="truncate text-sm font-medium text-ink">
-                {wallet.name}
-              </p>
-              <p className="mt-1 tabular text-sm font-bold text-ink">
-                {balanceHidden ? 'Rp ••••••' : formatCompact(wallet.balance)}
-              </p>
-            </Card>
-          ))}
+          {wallets.map((wallet) => {
+            const WalletIcon = getIcon(wallet.iconKey)
+            return (
+              <Card
+                key={wallet.id}
+                role="button"
+                tabIndex={0}
+                className="w-44 shrink-0 cursor-pointer snap-start p-4 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+              >
+                <div className="mb-3 inline-flex size-10 items-center justify-center rounded-full bg-brand-50 text-brand-600">
+                  <WalletIcon size={22} strokeWidth={1.75} aria-hidden />
+                </div>
+                <p className="truncate text-sm font-medium text-ink">
+                  {wallet.name}
+                </p>
+                <p className="mt-1 tabular text-sm font-bold text-ink">
+                  {balanceHidden ? 'Rp ••••••' : formatCompact(wallet.balance)}
+                </p>
+              </Card>
+            )
+          })}
         </div>
       </section>
 
       {/* d. Progres anggaran */}
-      <Card>
+      <Card
+        className="animate-fade-up"
+        style={{ animationDelay: '210ms' }}
+      >
         <h2 className="mb-4 text-base font-semibold text-ink">
           Progres anggaran
         </h2>
@@ -165,7 +231,10 @@ export function DashboardPage() {
       </Card>
 
       {/* e. Pengeluaran per kategori */}
-      <Card>
+      <Card
+        className="animate-fade-up"
+        style={{ animationDelay: '280ms' }}
+      >
         <h2 className="mb-4 text-base font-semibold text-ink">
           Pengeluaran per kategori
         </h2>
@@ -173,7 +242,7 @@ export function DashboardPage() {
           <p className="text-sm text-ink-soft">Belum ada pengeluaran bulan ini.</p>
         ) : (
           <>
-            <div className="mx-auto h-48 w-full max-w-[220px]">
+            <div className="relative mx-auto h-48 w-full max-w-[220px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -184,6 +253,9 @@ export function DashboardPage() {
                     outerRadius={76}
                     paddingAngle={2}
                     stroke="none"
+                    isAnimationActive
+                    animationDuration={700}
+                    animationBegin={0}
                   >
                     {categorySpend.map((entry, index) => (
                       <Cell
@@ -194,41 +266,54 @@ export function DashboardPage() {
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <p className="text-xs text-ink-soft">Total</p>
+                <p className="tabular text-sm font-bold text-expense-500">
+                  {balanceHidden ? 'Rp ••••••' : formatCompact(expense)}
+                </p>
+              </div>
             </div>
             <ul className="mt-4 space-y-2">
-              {categorySpend.map((entry, index) => (
-                <li
-                  key={entry.categoryId}
-                  className="flex items-center justify-between gap-3 text-sm"
-                >
-                  <span className="inline-flex min-w-0 items-center gap-2 text-ink">
-                    <span
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{
-                        backgroundColor: PIE_COLORS[index % PIE_COLORS.length],
-                      }}
-                      aria-hidden
-                    />
-                    <span className="truncate">
-                      {entry.emoji} {entry.name}
+              {categorySpend.map((entry, index) => {
+                const LegendIcon = getIcon(entry.iconKey)
+                return (
+                  <li
+                    key={entry.categoryId}
+                    className="flex items-center justify-between gap-3 text-sm"
+                  >
+                    <span className="inline-flex min-w-0 items-center gap-2 text-ink">
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{
+                          backgroundColor: PIE_COLORS[index % PIE_COLORS.length],
+                        }}
+                        aria-hidden
+                      />
+                      <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-expense-50 text-expense-500">
+                        <LegendIcon size={18} strokeWidth={1.75} aria-hidden />
+                      </span>
+                      <span className="truncate">{entry.name}</span>
                     </span>
-                  </span>
-                  <MoneyText
-                    amount={entry.amount}
-                    type="expense"
-                    compact
-                    className="text-sm"
-                    hidden={balanceHidden}
-                  />
-                </li>
-              ))}
+                    <MoneyText
+                      amount={entry.amount}
+                      type="expense"
+                      compact
+                      className="text-sm"
+                      hidden={balanceHidden}
+                    />
+                  </li>
+                )
+              })}
             </ul>
           </>
         )}
       </Card>
 
       {/* f. Transaksi terakhir */}
-      <Card className="lg:col-span-2">
+      <Card
+        className="animate-fade-up lg:col-span-2"
+        style={{ animationDelay: '350ms' }}
+      >
         <h2 className="mb-4 text-base font-semibold text-ink">
           Transaksi terakhir
         </h2>
@@ -237,16 +322,24 @@ export function DashboardPage() {
             const category = categoryById.get(tx.categoryId)
             const wallet = walletById.get(tx.walletId)
             const title = tx.notes?.trim() || category?.name || 'Transaksi'
+            const TxIcon = getIcon(category?.iconKey ?? 'default')
+            const toneClass =
+              tx.type === 'income'
+                ? 'bg-income-50 text-income-600'
+                : 'bg-expense-50 text-expense-500'
             return (
               <li
                 key={tx.id}
                 className="flex min-h-11 items-center gap-3 py-3 first:pt-0 last:pb-0"
               >
                 <span
-                  className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-lg"
+                  className={cn(
+                    'inline-flex size-10 shrink-0 items-center justify-center rounded-full',
+                    toneClass,
+                  )}
                   aria-hidden
                 >
-                  {category?.emoji ?? '•'}
+                  <TxIcon size={18} strokeWidth={1.75} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink">
