@@ -64,7 +64,7 @@ export function ProgressBar({ value, max, label, className }: ProgressBarProps) 
         </div>
         <span
           className={cn(
-            'inline-flex shrink-0 items-center gap-1 text-sm text-ink-soft',
+            'inline-flex min-w-28 shrink-0 items-center gap-1 text-sm text-ink-soft',
             status === 'healthy' && 'text-income-600',
             status === 'warning' && 'text-warn-700',
             status === 'over' && 'text-danger-700',

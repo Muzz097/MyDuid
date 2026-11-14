@@ -12,7 +12,7 @@ export interface Category {
   id: number
   name: string
   type: TransactionType
-  emoji: string
+  iconKey: string
 }
 
 export interface Transaction {

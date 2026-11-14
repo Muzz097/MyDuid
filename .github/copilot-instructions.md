@@ -22,3 +22,12 @@ React 19, TypeScript strict, Vite, Tailwind CSS 4, Recharts, react-router-dom, l
 
 ## Struktur
 components/ui (generik), components/layout, features/<modul>, pages, lib, hooks, types, mocks.
+
+## Ikon & gerak
+- Ikon HANYA dari `lucide-react` (outline, strokeWidth 1.75). DILARANG emoji
+  di UI, data, maupun teks. Ikon dipetakan lewat `@/lib/icons` (getIcon).
+- Data menyimpan `iconKey` (string), bukan emoji.
+- Animasi memakai CSS/Tailwind (`animate-fade-up`, transition). Tanpa library
+  animasi baru. Semua gerak wajib menghormati `prefers-reduced-motion`.
+- Durasi transisi 150–300ms, easing halus. Elemen interaktif punya state
+  hover, active (scale-[0.98]), dan focus-visible ring yang jelas.

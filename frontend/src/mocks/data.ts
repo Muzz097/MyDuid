@@ -1,18 +1,18 @@
 import type { Budget, Category, Transaction, Wallet } from '@/types'
 
 export const wallets: Wallet[] = [
-  { id: 1, name: 'Kas', type: 'cash', iconKey: 'wallet-cat', balance: 350000 },
-  { id: 2, name: 'BCA', type: 'bank', iconKey: 'wallet-bank', balance: 4200000 },
-  { id: 3, name: 'E-wallet', type: 'ewallet', iconKey: 'wallet-phone', balance: 1125000 },
+  { id: 1, name: 'Kas', type: 'cash', iconKey: 'cash', balance: 350000 },
+  { id: 2, name: 'BCA', type: 'bank', iconKey: 'bank', balance: 4200000 },
+  { id: 3, name: 'E-wallet', type: 'ewallet', iconKey: 'ewallet', balance: 1125000 },
 ]
 
 export const categories: Category[] = [
-  { id: 1, name: 'Makanan', type: 'expense', emoji: '🍜' },
-  { id: 2, name: 'Transport', type: 'expense', emoji: '🚌' },
-  { id: 3, name: 'Belanja', type: 'expense', emoji: '🛍️' },
-  { id: 4, name: 'Hiburan', type: 'expense', emoji: '🎬' },
-  { id: 5, name: 'Gaji', type: 'income', emoji: '💼' },
-  { id: 6, name: 'Bonus', type: 'income', emoji: '🎁' },
+  { id: 1, name: 'Makanan', type: 'expense', iconKey: 'food' },
+  { id: 2, name: 'Transport', type: 'expense', iconKey: 'transport' },
+  { id: 3, name: 'Belanja', type: 'expense', iconKey: 'shopping' },
+  { id: 4, name: 'Hiburan', type: 'expense', iconKey: 'entertainment' },
+  { id: 5, name: 'Gaji', type: 'income', iconKey: 'salary' },
+  { id: 6, name: 'Bonus', type: 'income', iconKey: 'bonus' },
 ]
 
 export const transactions: Transaction[] = [
