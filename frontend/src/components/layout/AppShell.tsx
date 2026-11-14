@@ -8,6 +8,10 @@ import {
 } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
+import {
+  AddTransactionProvider,
+  useAddTransaction,
+} from '@/features/transactions/AddTransactionContext'
 import { cn } from '@/lib/cn'
 
 type SidebarLink = {
@@ -40,8 +44,9 @@ function bottomNavClassName({ isActive }: { isActive: boolean }) {
   )
 }
 
-export function AppShell() {
+function AppShellInner() {
   const { pathname } = useLocation()
+  const { openAddTransaction } = useAddTransaction()
 
   return (
     <div className="flex min-h-dvh bg-page text-ink">
@@ -62,12 +67,7 @@ export function AppShell() {
           ))}
         </nav>
 
-        <Button
-          variant="primary"
-          fullWidth
-          // TODO: buka form catat transaksi
-          onClick={() => {}}
-        >
+        <Button variant="primary" fullWidth onClick={openAddTransaction}>
           Catat Transaksi
         </Button>
       </aside>
@@ -139,8 +139,7 @@ export function AppShell() {
               <button
                 type="button"
                 aria-label="Catat transaksi"
-                // TODO: buka form catat transaksi
-                onClick={() => {}}
+                onClick={openAddTransaction}
                 className="-mt-5 inline-flex size-14 items-center justify-center rounded-full bg-brand-500 text-white shadow-[0_8px_20px_color-mix(in_srgb,var(--color-brand-500)_35%,transparent)] transition duration-200 hover:scale-105 hover:bg-brand-600 hover:shadow-[0_10px_28px_color-mix(in_srgb,var(--color-brand-500)_45%,transparent)] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2 focus-visible:ring-offset-card"
               >
                 <Plus size={28} strokeWidth={1.75} aria-hidden />
@@ -196,5 +195,13 @@ export function AppShell() {
         </nav>
       </div>
     </div>
+  )
+}
+
+export function AppShell() {
+  return (
+    <AddTransactionProvider>
+      <AppShellInner />
+    </AddTransactionProvider>
   )
 }

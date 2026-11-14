@@ -9,8 +9,10 @@ import { useCountUp } from '@/hooks/useCountUp'
 import { cn } from '@/lib/cn'
 import { getIcon } from '@/lib/icons'
 import { formatCompact } from '@/lib/money'
+import { useStore } from '@/lib/store'
 import { monthSummary, totalBalance } from '@/lib/summary'
-import { budgets, categories, transactions, wallets } from '@/mocks/data'
+import { budgets } from '@/mocks/data'
+import type { Category, Transaction } from '@/types'
 
 const PIE_COLORS = [
   'var(--color-expense-500)',
@@ -24,7 +26,10 @@ function formatShortDate(iso: string): string {
   return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
 }
 
-function expenseByCategory() {
+function expenseByCategory(
+  transactions: Transaction[],
+  categories: Category[],
+) {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth() + 1
@@ -71,6 +76,7 @@ function DashboardSkeleton() {
 }
 
 export function DashboardPage() {
+  const { wallets, transactions, categories } = useStore()
   const [balanceHidden, setBalanceHidden] = useState(false)
   const [loading, setLoading] = useState(true)
   const now = new Date()
@@ -81,7 +87,7 @@ export function DashboardPage() {
     now.getFullYear(),
     now.getMonth() + 1,
   )
-  const categorySpend = expenseByCategory()
+  const categorySpend = expenseByCategory(transactions, categories)
   const recent = [...transactions]
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
     .slice(0, 5)

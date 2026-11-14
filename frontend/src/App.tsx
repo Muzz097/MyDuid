@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/layout/AppShell'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
+import { TransactionsPage } from '@/pages/TransactionsPage'
 
 export default function App() {
   return (
@@ -9,10 +10,7 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<DashboardPage />} />
-          <Route
-            path="/transaksi"
-            element={<PlaceholderPage title="Transaksi" />}
-          />
+          <Route path="/transaksi" element={<TransactionsPage />} />
           <Route path="/dompet" element={<PlaceholderPage title="Dompet" />} />
           <Route
             path="/anggaran"
