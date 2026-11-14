@@ -1,4 +1,9 @@
-﻿# MyDuid — Aturan Proyek
+﻿---
+description: Aturan proyek MyDuid
+alwaysApply: true
+---
+
+# MyDuid — Aturan Proyek
 
 Aplikasi personal finance (React SPA + Laravel API). Bahasa UI: Indonesia.
 
