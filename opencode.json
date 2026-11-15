@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "ask",
+      "php artisan route:list*": "allow",
+      "php artisan make:*": "allow",
+      "./vendor/bin/pest*": "allow",
+      "./vendor/bin/pint*": "allow",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "php artisan migrate:fresh*": "deny",
+      "git push*": "deny"
+    }
+  }
+}

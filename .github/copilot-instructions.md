@@ -31,3 +31,22 @@ components/ui (generik), components/layout, features/<modul>, pages, lib, hooks,
   animasi baru. Semua gerak wajib menghormati `prefers-reduced-motion`.
 - Durasi transisi 150–300ms, easing halus. Elemen interaktif punya state
   hover, active (scale-[0.98]), dan focus-visible ring yang jelas.
+
+  ## Backend (folder `backend/`)
+Laravel 13, PHP 8.4, PostgreSQL 16, Sanctum SPA (session cookie, TANPA bearer token), Pest.
+Komentar & pesan error API: Bahasa Indonesia. Kode & nama class: Inggris.
+
+### Aturan wajib
+- Uang = integer Rupiah (bigInteger). DILARANG float/decimal untuk uang.
+- Saldo HANYA dihitung lewat `App\Services\BalanceService`. Jangan hitung ulang di tempat lain.
+- Isolasi data: SELALU ambil data lewat relasi user (`$request->user()->wallets()`), tidak pernah `Wallet::find()`.
+- `user_id` DILARANG masuk `$fillable` dan DILARANG dari input request.
+- Setiap controller resource memakai Policy (`$this->authorize`) DAN ownership query.
+- Validasi: Form Request. wallet_id/category_id divalidasi dengan `Rule::exists(...)->where('user_id', $request->user()->id)`.
+- Kategori income hanya untuk transaksi income, expense untuk expense (validasi).
+- Operasi multi-tabel (transfer) WAJIB `DB::transaction`.
+- Response: API Resource. Jangan return model mentah.
+- JANGAN ubah migration yang sudah ada. Perubahan skema = migration baru.
+- Jangan tambah paket Composer tanpa diminta.
+- Selesai tiap tugas: `./vendor/bin/pint` lalu `./vendor/bin/pest`. Jangan klaim selesai jika pest merah.
+- Satu tugas per sesi. Jangan mengerjakan hal di luar daftar.
