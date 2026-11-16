@@ -3,9 +3,8 @@
 use App\Models\User;
 use App\Services\BalanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-uses(TestCase::class, RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 function makeUserWithWallet(int $opening = 0): array
 {

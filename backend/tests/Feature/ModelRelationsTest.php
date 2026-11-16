@@ -7,9 +7,8 @@ use App\Models\Transfer;
 use App\Models\User;
 use App\Models\Wallet;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
-uses(TestCase::class, RefreshDatabase::class);
+uses(RefreshDatabase::class);
 
 it('mengisi user_id saat dompet dibuat lewat relasi user', function () {
     $user = User::factory()->create();
