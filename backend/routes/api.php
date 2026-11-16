@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\WalletController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -17,5 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', LogoutController::class);
     Route::get('/user', fn (Request $r) => new UserResource($r->user()));
     Route::patch('/wallets/{wallet}/archive', [WalletController::class, 'archive']);
+    Route::patch('/categories/{category}/archive', [CategoryController::class, 'archive']);
     Route::apiResource('wallets', WalletController::class);
+    Route::apiResource('categories', CategoryController::class);
 });
