@@ -19,7 +19,7 @@ class UpdateTransactionRequest extends StoreTransactionRequest
             if ($v->errors()->isNotEmpty()) {
                 return;
             }
-            $tx = $this->route('transaction_model');
+            $tx = $this->user()->transactions()->findOrFail($this->route('transaction'));
             $type = $this->input('type', $tx->type);
             $catId = $this->input('category_id', $tx->category_id);
             $cat = $this->user()->categories()->find($catId);
