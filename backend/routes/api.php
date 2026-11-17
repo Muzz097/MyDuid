@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
@@ -23,6 +24,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/categories/{category}/archive', [CategoryController::class, 'archive']);
     Route::apiResource('wallets', WalletController::class);
     Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('budgets', BudgetController::class);
     Route::post('/transactions/{transaction}/restore', [TransactionController::class, 'restore']);
     Route::apiResource('transactions', TransactionController::class);
     Route::post('/transfers/{transfer}/restore', [TransferController::class, 'restore']);

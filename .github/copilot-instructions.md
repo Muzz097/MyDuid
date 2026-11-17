@@ -50,3 +50,12 @@ Komentar & pesan error API: Bahasa Indonesia. Kode & nama class: Inggris.
 - Jangan tambah paket Composer tanpa diminta.
 - Selesai tiap tugas: `./vendor/bin/pint` lalu `./vendor/bin/pest`. Jangan klaim selesai jika pest merah.
 - Satu tugas per sesi. Jangan mengerjakan hal di luar daftar.
+
+## Budget
+- Budget per bulan: kolom year, month, limit_amount, category_id nullable, wallet_id nullable; minimal salah satu terisi (CHECK sudah ada di DB).
+- category_id dan wallet_id divalidasi Rule::exists berfilter user dan is_active.
+- Kategori budget harus bertipe expense.
+- Unik per user+year+month+category_id+wallet_id (cek di Form Request, perlakukan NULL sebagai nilai).
+- Progres (spent) = SUM transaksi expense aktif (deleted_at NULL) pada bulan itu, difilter category_id dan/atau wallet_id budget. Satu transaksi tidak boleh terhitung dua kali dalam satu budget. Transfer TIDAK dihitung.
+- Status: <80% healthy, 80-100% warning, >100% over.
+- Logika spent di App\Services\BudgetProgressService, bukan di controller.
