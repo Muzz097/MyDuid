@@ -1,17 +1,19 @@
 import {
   Home,
+  LogOut,
   MoreHorizontal,
   PiggyBank,
   Plus,
   Receipt,
   Wallet,
 } from 'lucide-react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import {
   AddTransactionProvider,
   useAddTransaction,
 } from '@/features/transactions/AddTransactionContext'
+import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 
 type SidebarLink = {
@@ -46,7 +48,14 @@ function bottomNavClassName({ isActive }: { isActive: boolean }) {
 
 function AppShellInner() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { logout } = useAuth()
   const { openAddTransaction } = useAddTransaction()
+
+  async function handleLogout() {
+    await logout()
+    navigate('/masuk', { replace: true })
+  }
 
   return (
     <div className="flex min-h-dvh bg-page text-ink">
@@ -67,9 +76,20 @@ function AppShellInner() {
           ))}
         </nav>
 
-        <Button variant="primary" fullWidth onClick={openAddTransaction}>
-          Catat Transaksi
-        </Button>
+        <div className="mt-4 flex flex-col gap-2">
+          <Button variant="primary" fullWidth onClick={openAddTransaction}>
+            Catat Transaksi
+          </Button>
+          <Button
+            variant="ghost"
+            fullWidth
+            onClick={() => void handleLogout()}
+            className="gap-2 text-ink-soft"
+          >
+            <LogOut size={18} strokeWidth={1.75} aria-hidden />
+            Keluar
+          </Button>
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
