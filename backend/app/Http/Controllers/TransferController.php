@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTransferRequest;
 use App\Http\Resources\TransferResource;
 use App\Models\Transfer;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -29,7 +30,7 @@ class TransferController extends Controller
         $q = $request->user()->transfers()->with(self::WITH);
 
         if ($m = $request->query('month')) {
-            $start = \Carbon\Carbon::createFromFormat('Y-m-d', $m.'-01', 'Asia/Jakarta')->startOfMonth();
+            $start = Carbon::createFromFormat('Y-m-d', $m.'-01', 'Asia/Jakarta')->startOfMonth();
             $q->whereBetween('transfer_date', [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()]);
         }
 
