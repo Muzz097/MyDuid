@@ -7,6 +7,7 @@ type ProgressBarProps = {
   max: number
   label?: string
   className?: string
+  markerPercent?: number
 }
 
 type BudgetStatus = 'healthy' | 'warning' | 'over'
@@ -38,7 +39,13 @@ const statusConfig: Record<
   },
 }
 
-export function ProgressBar({ value, max, label, className }: ProgressBarProps) {
+export function ProgressBar({
+  value,
+  max,
+  label,
+  className,
+  markerPercent,
+}: ProgressBarProps) {
   const [ready, setReady] = useState(false)
   const percent = max > 0 ? (value / max) * 100 : 0
   const status = getStatus(percent)
@@ -62,7 +69,7 @@ export function ProgressBar({ value, max, label, className }: ProgressBarProps) 
           aria-valuemin={0}
           aria-valuemax={max}
           aria-label={label}
-          className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"
+          className="relative h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"
         >
           <div
             className={cn(
@@ -71,6 +78,16 @@ export function ProgressBar({ value, max, label, className }: ProgressBarProps) 
             )}
             style={{ width: ready ? `${barWidth}%` : '0%' }}
           />
+          {markerPercent !== undefined ? (
+            <span
+              title="Posisi wajar hari ini"
+              aria-label="Posisi wajar hari ini"
+              className="absolute inset-y-0 z-[1] w-0.5 bg-ink"
+              style={{
+                left: `${Math.min(100, Math.max(0, markerPercent))}%`,
+              }}
+            />
+          ) : null}
         </div>
         <span
           className={cn(

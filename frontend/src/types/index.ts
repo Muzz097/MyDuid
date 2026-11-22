@@ -6,6 +6,7 @@ export interface Wallet {
   type: 'cash' | 'bank' | 'ewallet'
   iconKey: string          // identifier ikon bawaan, mis. "wallet-cat"
   balance: number          // Rupiah utuh
+  isActive?: boolean
 }
 
 export interface Category {

@@ -5,9 +5,10 @@ import { AppShell } from '@/components/layout/AppShell'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { MorePage } from '@/pages/MorePage'
-import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { TransactionsPage } from '@/pages/TransactionsPage'
+import { BudgetsPage } from '@/pages/BudgetsPage'
+import { WalletsPage } from '@/pages/WalletsPage'
 
 export default function App() {
   return (
@@ -22,11 +23,8 @@ export default function App() {
           <Route element={<AppShell />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/transaksi" element={<TransactionsPage />} />
-            <Route path="/dompet" element={<PlaceholderPage title="Dompet" />} />
-            <Route
-              path="/anggaran"
-              element={<PlaceholderPage title="Anggaran" />}
-            />
+            <Route path="/dompet" element={<WalletsPage />} />
+            <Route path="/anggaran" element={<BudgetsPage />} />
             <Route path="/lainnya" element={<MorePage />} />
           </Route>
         </Route>

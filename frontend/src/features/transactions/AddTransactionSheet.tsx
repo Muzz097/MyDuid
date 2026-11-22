@@ -60,6 +60,10 @@ export function AddTransactionSheet({
 }: AddTransactionSheetProps) {
   const { wallets, categories, addTransaction, removeTransaction } = useStore()
   const { show } = useToast()
+  const activeWallets = useMemo(
+    () => wallets.filter((wallet) => wallet.isActive !== false),
+    [wallets],
+  )
 
   const [type, setType] = useState<TransactionType>('expense')
   const [digits, setDigits] = useState('')
@@ -88,7 +92,7 @@ export function AddTransactionSheet({
 
     const lastWallet = readStoredId(LAST_WALLET_KEY)
     const wallet =
-      wallets.find((w) => w.id === lastWallet) ?? wallets[0] ?? null
+      activeWallets.find((w) => w.id === lastWallet) ?? activeWallets[0] ?? null
     setWalletId(wallet?.id ?? null)
 
     const lastCategory = readStoredId(LAST_CATEGORY_KEY)
@@ -96,7 +100,7 @@ export function AddTransactionSheet({
     const category =
       expenseCats.find((c) => c.id === lastCategory) ?? expenseCats[0] ?? null
     setCategoryId(category?.id ?? null)
-  }, [open, wallets, categories])
+  }, [open, activeWallets, categories])
 
   useEffect(() => {
     const available = categories.filter((c) => c.type === type)
@@ -120,31 +124,46 @@ export function AddTransactionSheet({
     setDigits((prev) => prev.slice(0, -1))
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!Number.isInteger(amount) || amount <= 0) return
     if (categoryId == null || walletId == null) return
 
-    const tx = addTransaction({
-      walletId,
-      categoryId,
-      type,
-      amount,
-      date,
-      notes: notes.trim() || undefined,
-    })
+    try {
+      const tx = await addTransaction({
+        walletId,
+        categoryId,
+        type,
+        amount,
+        date,
+        notes: notes.trim() || undefined,
+      })
 
-    writeStoredId(LAST_CATEGORY_KEY, categoryId)
-    writeStoredId(LAST_WALLET_KEY, walletId)
-    onClose()
+      writeStoredId(LAST_CATEGORY_KEY, categoryId)
+      writeStoredId(LAST_WALLET_KEY, walletId)
+      onClose()
 
-    show({
-      message: 'Transaksi disimpan',
-      actionLabel: 'Batalkan',
-      onAction: () => {
-        removeTransaction(tx.id)
-        show({ message: 'Dibatalkan' })
-      },
-    })
+      show({
+        message: 'Transaksi disimpan',
+        actionLabel: 'Batalkan',
+        onAction: () => {
+          void removeTransaction(tx.id)
+            .then(() => show({ message: 'Dibatalkan' }))
+            .catch((error: unknown) =>
+              show({
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : 'Transaksi gagal dibatalkan',
+              }),
+            )
+        },
+      })
+    } catch (error) {
+      show({
+        message:
+          error instanceof Error ? error.message : 'Transaksi gagal disimpan',
+      })
+    }
   }
 
   const canSave =
@@ -233,7 +252,7 @@ export function AddTransactionSheet({
         <div>
           <p className="mb-2 text-sm font-medium text-ink">Dompet</p>
           <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {wallets.map((wallet) => {
+            {activeWallets.map((wallet) => {
               const Icon = getIcon(wallet.iconKey)
               return (
                 <Chip

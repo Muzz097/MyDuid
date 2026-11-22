@@ -155,6 +155,29 @@ function AppShellInner() {
               )}
             </NavLink>
 
+            <NavLink to="/dompet" className={bottomNavClassName}>
+              {({ isActive }) => (
+                <>
+                  <span
+                    className={cn(
+                      'absolute top-0 h-0.5 w-6 rounded-full bg-brand-500 transition duration-200',
+                      isActive
+                        ? 'scale-x-100 opacity-100'
+                        : 'scale-x-50 opacity-0',
+                    )}
+                    aria-hidden
+                  />
+                  <Wallet
+                    size={20}
+                    strokeWidth={1.75}
+                    className={cn(isActive && 'text-brand-600')}
+                    aria-hidden
+                  />
+                  Dompet
+                </>
+              )}
+            </NavLink>
+
             <div className="flex flex-1 items-center justify-center">
               <button
                 type="button"

@@ -19,6 +19,7 @@ type ApiWallet = {
   type: Wallet['type']
   icon_key: string
   balance: number
+  is_active?: boolean
 }
 
 type ApiCategory = {
@@ -61,6 +62,7 @@ function mapWallet(w: ApiWallet): Wallet {
     type: w.type,
     iconKey: w.icon_key,
     balance: w.balance,
+    isActive: w.is_active,
   }
 }
 

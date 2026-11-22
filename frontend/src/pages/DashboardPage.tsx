@@ -5,13 +5,14 @@ import { Card } from '@/components/ui/Card'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useToast } from '@/components/ui/Toast'
 import { useCountUp } from '@/hooks/useCountUp'
+import { ApiError, api } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { getIcon } from '@/lib/icons'
 import { formatCompact } from '@/lib/money'
 import { useStore } from '@/lib/store'
 import { monthSummary, totalBalance } from '@/lib/summary'
-import { budgets } from '@/mocks/data'
 import type { Category, Transaction } from '@/types'
 
 const PIE_COLORS = [
@@ -20,6 +21,23 @@ const PIE_COLORS = [
   'var(--color-warn-500)',
   'var(--color-brand-400)',
 ]
+
+type DashboardBudget = {
+  id: number
+  limit_amount: number
+  spent: number
+  percent: number
+  category: { name: string } | null
+  wallet: { name: string } | null
+}
+
+function currentMonth(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+    year: 'numeric',
+    month: '2-digit',
+  }).format(new Date())
+}
 
 function formatShortDate(iso: string): string {
   const date = new Date(`${iso}T00:00:00`)
@@ -77,9 +95,11 @@ function DashboardSkeleton() {
 
 export function DashboardPage() {
   const { wallets, transactions, categories } = useStore()
+  const { show } = useToast()
   const [balanceHidden, setBalanceHidden] = useState(false)
   const [loading, setLoading] = useState(true)
-  const now = new Date()
+  const [budgets, setBudgets] = useState<DashboardBudget[]>([])
+  const [now] = useState(() => new Date())
   const balance = totalBalance(wallets)
   const animatedBalance = useCountUp(loading ? 0 : balance)
   const { income, expense } = monthSummary(
@@ -96,9 +116,34 @@ export function DashboardPage() {
   const walletById = new Map(wallets.map((w) => [w.id, w]))
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 600)
-    return () => window.clearTimeout(timer)
-  }, [])
+    let active = true
+    api<{ data: DashboardBudget[] }>(`/budgets?month=${currentMonth()}`)
+      .then((response) => {
+        if (active) {
+          setBudgets(
+            [...response.data]
+              .sort((left, right) => right.percent - left.percent)
+              .slice(0, 3),
+          )
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          show({
+            message:
+              error instanceof ApiError
+                ? error.message
+                : 'Progres anggaran gagal dimuat',
+          })
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [show])
 
   if (loading) {
     return <DashboardSkeleton />
@@ -222,17 +267,24 @@ export function DashboardPage() {
           Progres anggaran
         </h2>
         <div className="flex flex-col gap-4">
-          {budgets.map((budget) => {
-            const category = categoryById.get(budget.categoryId)
-            return (
+          {budgets.length === 0 ? (
+            <p className="text-sm text-ink-soft">
+              Belum ada anggaran untuk bulan ini.
+            </p>
+          ) : (
+            budgets.map((budget) => (
               <ProgressBar
                 key={budget.id}
                 value={budget.spent}
-                max={budget.limit}
-                label={category?.name ?? 'Kategori'}
+                max={budget.limit_amount}
+                label={
+                  budget.category && budget.wallet
+                    ? `${budget.category.name} · ${budget.wallet.name}`
+                    : budget.category?.name ?? budget.wallet?.name ?? 'Anggaran'
+                }
               />
-            )
-          })}
+            ))
+          )}
         </div>
       </Card>
 

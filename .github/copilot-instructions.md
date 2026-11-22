@@ -59,3 +59,10 @@ Komentar & pesan error API: Bahasa Indonesia. Kode & nama class: Inggris.
 - Progres (spent) = SUM transaksi expense aktif (deleted_at NULL) pada bulan itu, difilter category_id dan/atau wallet_id budget. Satu transaksi tidak boleh terhitung dua kali dalam satu budget. Transfer TIDAK dihitung.
 - Status: <80% healthy, 80-100% warning, >100% over.
 - Logika spent di App\Services\BudgetProgressService, bukan di controller.
+
+## Halaman Dompet & Anggaran
+- Data dari API, bukan mock. Setelah mutasi, muat ulang dari server.
+- Ikon dompet dari `@/lib/icons` (iconKeys), bukan emoji.
+- Hapus/arsip memakai dialog konfirmasi (komponen `ConfirmDialog` di components/ui).
+- Error 422 ditampilkan per field; error umum lewat Toast.
+- Nominal selalu integer; input nominal memakai komponen `MoneyInput`.

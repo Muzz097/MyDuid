@@ -4,9 +4,18 @@ const idr = new Intl.NumberFormat('id-ID', {
   maximumFractionDigits: 0,
 })
 
+const idrInput = new Intl.NumberFormat('id-ID', {
+  maximumFractionDigits: 0,
+})
+
 /** 25000 -> "Rp25.000" */
 export function formatRupiah(amount: number): string {
   return idr.format(amount)
+}
+
+/** 25000 -> "25.000" (untuk input dengan awalan Rp terpisah) */
+export function formatRupiahInput(amount: number): string {
+  return idrInput.format(amount)
 }
 
 /** 1250000 -> "Rp1,25 jt" (untuk kartu kecil) */
