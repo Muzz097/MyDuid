@@ -1,93 +1,23 @@
 @import "tailwindcss";
 
-/* Font: tambahkan di index.html (lihat di bawah) */
+/*
+  MyDuid design tokens.
+
+  Brand and surface colors are runtime CSS variables so a later theme
+  switcher can set `data-theme` on the root element. Tailwind utilities
+  read those variables through `@theme inline` and stay in sync.
+
+  Semantic income, expense, warning, danger, and info colors do not
+  change between themes. Income stays green. Expense stays coral.
+*/
 
 @theme {
-  /* Tipografi */
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  /* Brand: pink */
-  --color-brand-50:  #fff1f6;
-  --color-brand-100: #ffe0ec;
-  --color-brand-200: #ffc2d9;
-  --color-brand-300: #ff94bb;
-  --color-brand-400: #ff5c98;
-  --color-brand-500: #f43f85;
-  --color-brand-600: #d9226b;
-  --color-brand-700: #b4165a;
-  --color-brand-900: #6b0d36;
-
-  /* Pemasukan / sukses: hijau */
-  --color-income-50:  #effcf4;
-  --color-income-100: #d8f7e4;
-  --color-income-400: #3ed081;
-  --color-income-500: #1fb86a;
-  --color-income-600: #14965a;
-  --color-income-700: #0f7548;
-
-  /* Pengeluaran: coral (sengaja beda dari pink brand) */
-  --color-expense-50:  #fff4ee;
-  --color-expense-100: #ffe5d6;
-  --color-expense-400: #ff8a5c;
-  --color-expense-500: #f4693a;
-  --color-expense-600: #d94f24;
-
-  /* Status anggaran */
-  --color-warn-100: #fff3c4;
-  --color-warn-500: #f2a900;
-  --color-warn-700: #946400;
-  --color-danger-100: #ffdcdc;
-  --color-danger-500: #e5484d;
-  --color-danger-700: #a82a2f;
-
-  /* Radius & bayangan */
+  /* 20px cards, 14px controls — existing component contract */
   --radius-card: 1.25rem;
   --radius-control: 0.875rem;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(244 63 133 / 0.06);
-}
 
-/* Token semantik yang berubah antara light & dark */
-:root {
-  --surface-page: #fff8fb;
-  --surface-card: #ffffff;
-  --surface-muted: #fdf0f5;
-  --border-subtle: #f3dde6;
-  --text-primary: #2a1620;
-  --text-secondary: #7a5c6a;
-  color-scheme: light;
-}
-
-.dark {
-  --surface-page: #170d12;
-  --surface-card: #231620;
-  --surface-muted: #2e1d27;
-  --border-subtle: #3d2a35;
-  --text-primary: #fbeef3;
-  --text-secondary: #b99aa9;
-  color-scheme: dark;
-}
-
-@theme inline {
-  --color-page: var(--surface-page);
-  --color-card: var(--surface-card);
-  --color-muted: var(--surface-muted);
-  --color-line: var(--border-subtle);
-  --color-ink: var(--text-primary);
-  --color-ink-soft: var(--text-secondary);
-}
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-body {
-  background: var(--surface-page);
-  color: var(--text-primary);
-  font-family: var(--font-sans);
-}
-
-/* Angka sejajar untuk nominal uang */
-.tabular { font-variant-numeric: tabular-nums; }
-
-@theme {
   --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --animate-fade-up: fade-up 0.5s var(--ease-soft) both;
   --animate-pop-in: pop-in 0.3s var(--ease-soft) both;
@@ -100,6 +30,301 @@ body {
     from { opacity: 0; transform: scale(0.94); }
     to   { opacity: 1; transform: none; }
   }
+}
+
+@theme inline {
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-accent: var(--accent);
+
+  --color-income-50: var(--income-50);
+  --color-income-100: var(--income-100);
+  --color-income-400: var(--income-400);
+  --color-income-500: var(--income-500);
+  --color-income-600: var(--income-600);
+  --color-income-700: var(--income-700);
+
+  --color-expense-50: var(--expense-50);
+  --color-expense-100: var(--expense-100);
+  --color-expense-400: var(--expense-400);
+  --color-expense-500: var(--expense-500);
+  --color-expense-600: var(--expense-600);
+
+  --color-warn-100: var(--warn-100);
+  --color-warn-500: var(--warn-500);
+  --color-warn-700: var(--warn-700);
+
+  --color-danger-100: var(--danger-100);
+  --color-danger-500: var(--danger-500);
+  --color-danger-700: var(--danger-700);
+
+  --color-info-50: var(--info-50);
+  --color-info-100: var(--info-100);
+  --color-info-500: var(--info-500);
+  --color-info-700: var(--info-700);
+
+  --color-page: var(--surface-page);
+  --color-card: var(--surface-card);
+  --color-muted: var(--surface-muted);
+  --color-elevated: var(--surface-elevated);
+  --color-line: var(--border-subtle);
+  --color-ink: var(--text-primary);
+  --color-ink-soft: var(--text-secondary);
+  --color-focus: var(--focus-ring);
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Semantic meaning is shared by every theme and appearance mode. */
+:root {
+  --income-50: #eaf8f0;
+  --income-100: #d2f1de;
+  --income-400: #34c484;
+  --income-500: #168653;
+  --income-600: #117449;
+  --income-700: #0d5b3a;
+
+  --expense-50: #fff1ec;
+  --expense-100: #ffe0d4;
+  --expense-400: #e47a5c;
+  --expense-500: #bf5237;
+  --expense-600: #a4402c;
+
+  --warn-100: #fff3c4;
+  --warn-500: #b77909;
+  --warn-700: #805300;
+
+  --danger-100: #fde5e5;
+  --danger-500: #c93636;
+  --danger-700: #972626;
+
+  --info-50: #eff6ff;
+  --info-100: #dbeafe;
+  --info-500: #2563eb;
+  --info-700: #1d4ed8;
+
+  --duration-hover: 150ms;
+  --duration-press: 120ms;
+  --duration-focus: 150ms;
+  --duration-dropdown: 200ms;
+  --duration-modal: 240ms;
+  --duration-nav: 200ms;
+  --duration-theme: 240ms;
+
+  color-scheme: light;
+}
+
+/* Rupiah Merah — default, including when data-theme is absent. */
+:root,
+:root[data-theme="rupiah-merah"] {
+  --brand-50: #fff1f2;
+  --brand-100: #ffe2e5;
+  --brand-200: #ffc7cd;
+  --brand-300: #f59aa4;
+  --brand-400: #e76d7b;
+  --brand-500: #c43d4b;
+  --brand-600: #a92d3d;
+  --brand-700: #882434;
+  --brand-800: #6d1c29;
+  --brand-900: #4f1722;
+  --accent: #e76d7b;
+
+  --surface-page: #fff8f5;
+  --surface-card: #ffffff;
+  --surface-muted: #f8ebe9;
+  --surface-elevated: #ffffff;
+  --surface-brand-soft: #fff1f2;
+  --border-subtle: #eed9d8;
+  --text-primary: #3c2026;
+  --text-secondary: #7b6266;
+  --focus-ring: var(--brand-400);
+  --shadow-card:
+    0 1px 2px rgb(60 32 38 / 0.05),
+    0 8px 24px color-mix(in srgb, var(--brand-500) 8%, transparent);
+}
+
+:root[data-theme="myduid-garden"] {
+  --brand-50: #fff5f8;
+  --brand-100: #fde8f0;
+  --brand-200: #f6d0de;
+  --brand-300: #e7a4bb;
+  --brand-400: #d25b8c;
+  --brand-500: #b9326d;
+  --brand-600: #a1285d;
+  --brand-700: #8f2453;
+  --brand-800: #6c1a3e;
+  --brand-900: #471028;
+  --accent: #6f9875;
+
+  --surface-page: #fff7fa;
+  --surface-card: #ffffff;
+  --surface-muted: #f9edf2;
+  --surface-elevated: #ffffff;
+  --surface-brand-soft: #fde8f0;
+  --border-subtle: #eedbe4;
+  --text-primary: #30212a;
+  --text-secondary: #786673;
+  --focus-ring: var(--brand-400);
+  --shadow-card:
+    0 1px 2px rgb(48 33 42 / 0.05),
+    0 8px 24px color-mix(in srgb, var(--brand-500) 8%, transparent);
+}
+
+:root[data-theme="emerald"] {
+  --brand-50: #f3faf6;
+  --brand-100: #dcefe5;
+  --brand-200: #c0e2d2;
+  --brand-300: #8fcbb0;
+  --brand-400: #4a9a78;
+  --brand-500: #176b50;
+  --brand-600: #146048;
+  --brand-700: #10513d;
+  --brand-800: #0c3e2e;
+  --brand-900: #08281e;
+  --accent: #d5ae62;
+
+  --surface-page: #f5faf7;
+  --surface-card: #ffffff;
+  --surface-muted: #eaf3ee;
+  --surface-elevated: #ffffff;
+  --surface-brand-soft: #dcefe5;
+  --border-subtle: #d6e7dd;
+  --text-primary: #1e332a;
+  --text-secondary: #65786e;
+  --focus-ring: var(--brand-400);
+  --shadow-card:
+    0 1px 2px rgb(30 51 42 / 0.05),
+    0 8px 24px color-mix(in srgb, var(--brand-500) 8%, transparent);
+}
+
+/*
+  Midnight Rose is a dark preset. Brand 500 stays the documented primary.
+  Brand soft is available as a surface token; brand-50 stays a light tint
+  so existing bg-brand-50 + text-brand-600 pairings keep contrast.
+*/
+:root[data-theme="midnight-rose"] {
+  --brand-50: #f8e9f0;
+  --brand-100: #f3d5e2;
+  --brand-200: #ebc0d2;
+  --brand-300: #e09ab6;
+  --brand-400: #e57aa0;
+  --brand-500: #d95c88;
+  --brand-600: #b83d69;
+  --brand-700: #9a3056;
+  --brand-800: #6e2240;
+  --brand-900: #482638;
+  --accent: #d95c88;
+
+  --surface-page: #171016;
+  --surface-card: #211922;
+  --surface-muted: #2c202b;
+  --surface-elevated: #2c202b;
+  --surface-brand-soft: #482638;
+  --border-subtle: #443240;
+  --text-primary: #f7edf2;
+  --text-secondary: #bbaab5;
+  --focus-ring: var(--brand-400);
+  --shadow-card:
+    0 1px 2px rgb(0 0 0 / 0.28),
+    0 10px 28px rgb(0 0 0 / 0.36);
+  color-scheme: dark;
+}
+
+/* Dark appearance for themes that also have a light surface set. */
+:root.dark,
+:root:not([data-theme]).dark,
+:root[data-theme="rupiah-merah"].dark,
+:root:not([data-theme]) .dark,
+:root[data-theme="rupiah-merah"] .dark {
+  --surface-page: #1a1214;
+  --surface-card: #26181b;
+  --surface-muted: #332226;
+  --surface-elevated: #3d2a2e;
+  --surface-brand-soft: #3d242c;
+  --border-subtle: #514044;
+  --text-primary: #fbf6f4;
+  --text-secondary: #cdb6b4;
+  --shadow-card:
+    0 1px 2px rgb(0 0 0 / 0.28),
+    0 10px 28px rgb(0 0 0 / 0.36);
+  color-scheme: dark;
+}
+
+:root[data-theme="myduid-garden"].dark,
+:root[data-theme="myduid-garden"] .dark {
+  --surface-page: #140e12;
+  --surface-card: #21161c;
+  --surface-muted: #2c2128;
+  --surface-elevated: #352830;
+  --surface-brand-soft: #3a2432;
+  --border-subtle: #4a3842;
+  --text-primary: #fbf4f8;
+  --text-secondary: #cdb6c4;
+  --shadow-card:
+    0 1px 2px rgb(0 0 0 / 0.28),
+    0 10px 28px rgb(0 0 0 / 0.36);
+  color-scheme: dark;
+}
+
+:root[data-theme="emerald"].dark,
+:root[data-theme="emerald"] .dark {
+  --surface-page: #0e1613;
+  --surface-card: #15211c;
+  --surface-muted: #1c2b25;
+  --surface-elevated: #24352d;
+  --surface-brand-soft: #1a3330;
+  --border-subtle: #31483e;
+  --text-primary: #f4f8f6;
+  --text-secondary: #a9beb4;
+  --shadow-card:
+    0 1px 2px rgb(0 0 0 / 0.28),
+    0 10px 28px rgb(0 0 0 / 0.36);
+  color-scheme: dark;
+}
+
+:root[data-theme="midnight-rose"].dark,
+:root[data-theme="midnight-rose"] .dark {
+  --surface-page: #171016;
+  --surface-card: #211922;
+  --surface-muted: #2c202b;
+  --surface-elevated: #2c202b;
+  --surface-brand-soft: #482638;
+  --border-subtle: #443240;
+  --text-primary: #f7edf2;
+  --text-secondary: #bbaab5;
+  --shadow-card:
+    0 1px 2px rgb(0 0 0 / 0.28),
+    0 10px 28px rgb(0 0 0 / 0.36);
+  color-scheme: dark;
+}
+
+@layer base {
+  body {
+    background: var(--surface-page);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    transition:
+      background-color var(--duration-theme) var(--ease-soft),
+      color var(--duration-theme) var(--ease-soft);
+  }
+
+  :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+/* Angka sejajar untuk nominal uang */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 @media (prefers-reduced-motion: reduce) {
