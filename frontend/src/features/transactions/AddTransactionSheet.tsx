@@ -14,6 +14,7 @@ import type { TransactionType } from '@/types'
 type AddTransactionSheetProps = {
   open: boolean
   onClose: () => void
+  initialType?: TransactionType
 }
 
 const LAST_CATEGORY_KEY = 'myduid:lastCategoryId'
@@ -57,6 +58,7 @@ function appendDigits(current: string, chunk: string): string {
 export function AddTransactionSheet({
   open,
   onClose,
+  initialType = 'expense',
 }: AddTransactionSheetProps) {
   const { wallets, categories, addTransaction, removeTransaction } = useStore()
   const { show } = useToast()
@@ -65,7 +67,7 @@ export function AddTransactionSheet({
     [wallets],
   )
 
-  const [type, setType] = useState<TransactionType>('expense')
+  const [type, setType] = useState<TransactionType>(initialType)
   const [digits, setDigits] = useState('')
   const [categoryId, setCategoryId] = useState<number | null>(null)
   const [walletId, setWalletId] = useState<number | null>(null)
@@ -85,7 +87,7 @@ export function AddTransactionSheet({
 
   useEffect(() => {
     if (!open) return
-    setType('expense')
+    setType(initialType)
     setDigits('')
     setDate(todayJakarta())
     setNotes('')
@@ -96,11 +98,11 @@ export function AddTransactionSheet({
     setWalletId(wallet?.id ?? null)
 
     const lastCategory = readStoredId(LAST_CATEGORY_KEY)
-    const expenseCats = categories.filter((c) => c.type === 'expense')
+    const availableCats = categories.filter((c) => c.type === initialType)
     const category =
-      expenseCats.find((c) => c.id === lastCategory) ?? expenseCats[0] ?? null
+      availableCats.find((c) => c.id === lastCategory) ?? availableCats[0] ?? null
     setCategoryId(category?.id ?? null)
-  }, [open, activeWallets, categories])
+  }, [open, initialType, activeWallets, categories])
 
   useEffect(() => {
     const available = categories.filter((c) => c.type === type)
