@@ -1,38 +1,26 @@
-﻿---
-description: Aturan proyek MyDuid
+---
+description: MyDuid repository-wide rules. See root AGENTS.md for the canonical project guide.
 alwaysApply: true
 ---
 
-# MyDuid — Aturan Proyek
+# MyDuid — Cursor Rules
 
-Aplikasi personal finance (React SPA + Laravel API). Bahasa UI: Indonesia.
+Before any task, read the repository-root `AGENTS.md`. It is the canonical source of product requirements, roadmap, architecture, security, financial invariants, design direction, and workflow.
 
-## Stack frontend (folder `frontend/`)
-React 19, TypeScript strict, Vite, Tailwind CSS 4, Recharts, react-router-dom, lucide-react.
+## Required behavior
+- Treat MyDuid as an existing application. Extend working code; do not rebuild, duplicate, or replace existing functionality with mocks.
+- Inspect relevant files and Git status before editing. Verify actual implementation instead of inferring from screenshots or filenames.
+- Work only within the assigned scope. Do not perform broad refactors or add dependencies without approval.
+- Preserve the installed React 19 + TypeScript + Vite + Tailwind 4 frontend and Laravel 13 + PostgreSQL + Sanctum SPA backend.
+- Money is integer Rupiah only. Never use float for money.
+- Keep financial data scoped to the authenticated user. Never trust client-supplied user_id.
+- Preserve session-cookie/CSRF SPA authentication; do not add browser-stored bearer tokens.
+- Transfers are separate from income/expense and atomic.
+- Do not edit existing migrations; use new migrations for schema changes.
+- AI uses controlled backend financial tools, not unrestricted SQL. Require confirmation before persisting AI-generated changes.
+- Reuse existing components, API contracts, services, utilities, design tokens, and tests.
+- UI language is Indonesian. Use lucide-react, no emoji in product UI. Maintain accessibility, 44px touch targets, keyboard focus, and prefers-reduced-motion.
+- No destructive database actions, secrets exposure, commit, push, or deployment unless explicitly requested.
+- Report changed files and only the checks actually executed. Never claim unverified success.
 
-## Aturan wajib
-- Import memakai alias `@/` (contoh: `@/components/ui/Button`).
-- Gunakan `cn()` dari `@/lib/cn` untuk class kondisional.
-- Uang = integer Rupiah. Format hanya lewat `@/lib/money`. DILARANG memakai float untuk uang.
-- Warna HANYA dari token di `src/index.css`: `bg-brand-*` (aksi/brand), `text-income-*` (pemasukan), `text-expense-*` (pengeluaran), `warn`/`danger` (status anggaran), `bg-page`, `bg-card`, `text-ink`, `text-ink-soft`, `border-line`.
-- Dilarang hardcode hex atau memakai slate/gray/pink bawaan Tailwind.
-- Pengeluaran BUKAN pink (pink = brand). Pengeluaran = coral (`expense`).
-- Status tidak boleh hanya warna: selalu sertakan ikon atau teks.
-- Angka uang pakai class `tabular`.
-- Mobile-first. Target sentuh minimal 44px. Dukung dark mode lewat token, bukan `dark:` manual kecuali perlu.
-- Nada teks netral dan tidak menghakimi (jangan "kamu boros").
-- Komponen: function component, props bertipe eksplisit, satu komponen per file, export named.
-- Jangan tambah dependensi baru tanpa diminta.
-- Data sementara dari `src/mocks/`, belum ada API.
-
-## Struktur
-components/ui (generik), components/layout, features/<modul>, pages, lib, hooks, types, mocks.
-
-## Ikon & gerak
-- Ikon HANYA dari `lucide-react` (outline, strokeWidth 1.75). DILARANG emoji
-  di UI, data, maupun teks. Ikon dipetakan lewat `@/lib/icons` (getIcon).
-- Data menyimpan `iconKey` (string), bukan emoji.
-- Animasi memakai CSS/Tailwind (`animate-fade-up`, transition). Tanpa library
-  animasi baru. Semua gerak wajib menghormati `prefers-reduced-motion`.
-- Durasi transisi 150–300ms, easing halus. Elemen interaktif punya state
-  hover, active (scale-[0.98]), dan focus-visible ring yang jelas.
+Follow the phased MyDuid redesign roadmap and approved themes in root `AGENTS.md`. Cursor is the primary agent for scoped multi-file UI implementation; do not run concurrent agents on the same files.
