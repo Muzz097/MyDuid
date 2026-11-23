@@ -655,7 +655,7 @@ Tema yang direncanakan:
 1. Rupiah Merah — default.
 2. MyDuid Garden.
 3. Emerald.
-4. Midnight Rose — dark preset.
+4. Midnight Rose — palet rose dengan dukungan light dan dark appearance.
 
 Ocean Blue dan Monochrome dapat dipertimbangkan pada versi selanjutnya.
 
@@ -666,7 +666,8 @@ Pilihan mode tampilan:
 - Dark.
 - System.
 
-Tema dan mode tampilan adalah dua konsep yang perlu dikelola secara konsisten.
+Tema memilih palet warna; appearance memilih permukaan terang atau gelap.
+Keduanya dapat diubah secara independen.
 
 Jika pengguna memilih System, tampilan mengikuti preferensi sistem operasi.
 
@@ -684,6 +685,8 @@ Saat dibuka:
 - Pengguna bisa membatalkan atau menerapkan perubahan sesuai desain interaksi.
 
 Preferensi tema sebaiknya tersimpan pada akun agar konsisten ketika pengguna berpindah perangkat. Untuk pengguna tamu atau sebelum autentikasi, boleh menggunakan preferensi lokal yang aman.
+
+Implementasi awal menyimpan tema dan appearance secara lokal di browser agar tetap konsisten saat route berubah maupun setelah login/logout. Preferensi akun lintas perangkat belum disinkronkan.
 
 Jangan menyimpan token autentikasi di localStorage atau sessionStorage demi fitur tema.
 

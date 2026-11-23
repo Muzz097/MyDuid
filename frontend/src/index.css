@@ -124,7 +124,8 @@
 
 /* Rupiah Merah — default, including when data-theme is absent. */
 :root,
-:root[data-theme="rupiah-merah"] {
+:root[data-theme="rupiah-merah"],
+.theme-preview[data-theme="rupiah-merah"] {
   --brand-50: #fff1f2;
   --brand-100: #ffe2e5;
   --brand-200: #ffc7cd;
@@ -151,7 +152,8 @@
     0 8px 24px color-mix(in srgb, var(--brand-500) 8%, transparent);
 }
 
-:root[data-theme="myduid-garden"] {
+:root[data-theme="myduid-garden"],
+.theme-preview[data-theme="myduid-garden"] {
   --brand-50: #fff5f8;
   --brand-100: #fde8f0;
   --brand-200: #f6d0de;
@@ -178,7 +180,8 @@
     0 8px 24px color-mix(in srgb, var(--brand-500) 8%, transparent);
 }
 
-:root[data-theme="emerald"] {
+:root[data-theme="emerald"],
+.theme-preview[data-theme="emerald"] {
   --brand-50: #f3faf6;
   --brand-100: #dcefe5;
   --brand-200: #c0e2d2;
@@ -210,7 +213,8 @@
   Brand soft is available as a surface token; brand-50 stays a light tint
   so existing bg-brand-50 + text-brand-600 pairings keep contrast.
 */
-:root[data-theme="midnight-rose"] {
+:root[data-theme="midnight-rose"],
+.theme-preview[data-theme="midnight-rose"] {
   --brand-50: #f8e9f0;
   --brand-100: #f3d5e2;
   --brand-200: #ebc0d2;
@@ -236,6 +240,22 @@
     0 1px 2px rgb(0 0 0 / 0.28),
     0 10px 28px rgb(0 0 0 / 0.36);
   color-scheme: dark;
+}
+
+/* Midnight Rose keeps its brand palette in light mode while adapting surfaces. */
+:root[data-theme="midnight-rose"]:not(.dark) {
+  --surface-page: #fff7fa;
+  --surface-card: #ffffff;
+  --surface-muted: #f5eaf0;
+  --surface-elevated: #ffffff;
+  --surface-brand-soft: #f3d5e2;
+  --border-subtle: #ead8e2;
+  --text-primary: #382531;
+  --text-secondary: #775e6d;
+  --shadow-card:
+    0 1px 2px rgb(56 37 49 / 0.05),
+    0 8px 24px color-mix(in srgb, var(--brand-500) 8%, transparent);
+  color-scheme: light;
 }
 
 /* Dark appearance for themes that also have a light surface set. */

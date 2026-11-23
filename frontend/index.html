@@ -2,6 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      const root = document.documentElement
+      const validThemes = [
+        'rupiah-merah',
+        'myduid-garden',
+        'emerald',
+        'midnight-rose',
+      ]
+      const validAppearances = ['light', 'dark', 'system']
+      let theme = 'rupiah-merah'
+      let appearance = 'system'
+
+      try {
+        const storedTheme = localStorage.getItem('myduid.theme')
+        const storedAppearance = localStorage.getItem('myduid.appearance')
+        if (storedTheme && validThemes.includes(storedTheme)) theme = storedTheme
+        if (storedAppearance && validAppearances.includes(storedAppearance)) {
+          appearance = storedAppearance
+        }
+      } catch (error) {
+        console.error('Preferensi tampilan tidak dapat dibaca.', error)
+      }
+
+      root.dataset.theme = theme
+      root.dataset.appearance = appearance
+      root.classList.toggle(
+        'dark',
+        appearance === 'dark' ||
+          (appearance === 'system' &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches),
+      )
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />

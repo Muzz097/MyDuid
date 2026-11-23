@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
+import { ThemeSwitcher } from '@/components/layout/ThemeSwitcher'
 import {
   AddTransactionProvider,
   useAddTransaction,
@@ -93,6 +94,16 @@ function AppShellInner() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        <header className="relative flex h-16 shrink-0 items-center justify-between border-b border-line bg-page px-4 lg:px-8">
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <span className="inline-flex size-9 items-center justify-center rounded-[var(--radius-control)] bg-brand-500 font-bold text-white">
+              M
+            </span>
+            <span className="font-semibold text-ink">MyDuid</span>
+          </div>
+          <ThemeSwitcher />
+        </header>
+
         <main
           className={cn(
             'mx-auto w-full max-w-5xl flex-1 px-4 py-6',
