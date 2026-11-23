@@ -6,6 +6,11 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
+import { MyDuidLoader } from '@/components/ui/MyDuidLoader'
+import {
+  PageHeaderMotion,
+  SectionMotion,
+} from '@/components/ui/Motion'
 import { WalletFormSheet } from '@/features/wallets/WalletFormSheet'
 import { ApiError, api } from '@/lib/api'
 import { getIcon } from '@/lib/icons'
@@ -47,10 +52,19 @@ function mapWallet(wallet: ApiWallet): WalletRecord {
 
 function WalletSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {Array.from({ length: 6 }, (_, index) => (
-        <Skeleton key={index} className="h-40" />
-      ))}
+    <div className="space-y-4" aria-busy="true">
+      <div className="flex items-center justify-center p-8 bg-card rounded-[var(--radius-card)] border border-line shadow-xs">
+        <MyDuidLoader
+          variant="section"
+          size="md"
+          message="Memuat daftar dompet..."
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 6 }, (_, index) => (
+          <Skeleton key={index} className="h-40" />
+        ))}
+      </div>
     </div>
   )
 }
@@ -139,19 +153,17 @@ export function WalletsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink">Dompet</h1>
-          <p className="mt-1 text-sm text-ink-soft">
-            Kelola sumber saldo yang kamu gunakan.
-          </p>
-        </div>
-        <Button className="hidden sm:inline-flex" onClick={openCreateForm}>
-          <Plus size={18} strokeWidth={1.75} className="mr-2" aria-hidden />
-          Tambah dompet
-        </Button>
-      </header>
+    <div className="space-y-6 pb-6">
+      <PageHeaderMotion
+        title="Dompet"
+        subtitle="Kelola sumber saldo yang kamu gunakan."
+        action={
+          <Button onClick={openCreateForm}>
+            <Plus size={18} strokeWidth={1.75} className="mr-2" aria-hidden />
+            Tambah dompet
+          </Button>
+        }
+      />
 
       {loading ? (
         <WalletSkeleton />
@@ -171,66 +183,69 @@ export function WalletsPage() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {wallets.map((wallet) => {
+          {wallets.map((wallet, idx) => {
             const Icon = getIcon(wallet.iconKey)
             return (
-              <Card
+              <SectionMotion
                 key={wallet.id}
-                className="group relative transition duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none"
+                delay={idx * 40}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600">
-                    <Icon size={24} strokeWidth={1.75} aria-hidden />
-                  </span>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      aria-label={`Aksi untuk ${wallet.name}`}
-                      aria-expanded={menuId === wallet.id}
-                      onClick={() =>
-                        setMenuId((current) =>
-                          current === wallet.id ? null : wallet.id,
-                        )
-                      }
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition duration-200 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                    >
-                      <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
-                    </button>
-                    {menuId === wallet.id ? (
-                      <div className="absolute right-0 top-full z-10 mt-1 min-w-36 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
-                        <button
-                          type="button"
-                          onClick={() => openEditForm(wallet)}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Ubah
-                        </button>
-                        <button
-                          type="button"
-                          disabled={!wallet.isActive}
-                          onClick={() => {
-                            setPendingAction({ wallet, action: 'archive' })
-                            setMenuId(null)
-                          }}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Arsipkan
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPendingAction({ wallet, action: 'delete' })
-                            setMenuId(null)
-                          }}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 transition hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Hapus
-                        </button>
-                      </div>
-                    ) : null}
+                <Card
+                  className="group relative transition duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-300">
+                      <Icon size={24} strokeWidth={1.75} aria-hidden />
+                    </span>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        aria-label={`Aksi untuk ${wallet.name}`}
+                        aria-expanded={menuId === wallet.id}
+                        onClick={() =>
+                          setMenuId((current) =>
+                            current === wallet.id ? null : wallet.id,
+                          )
+                        }
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition duration-200 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                      >
+                        <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
+                      </button>
+                      {menuId === wallet.id ? (
+                        <div className="absolute right-0 top-full z-10 mt-1 min-w-36 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
+                          <button
+                            type="button"
+                            onClick={() => openEditForm(wallet)}
+                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                          >
+                            Ubah
+                          </button>
+                          <button
+                            type="button"
+                            disabled={!wallet.isActive}
+                            onClick={() => {
+                              setPendingAction({ wallet, action: 'archive' })
+                              setMenuId(null)
+                            }}
+                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                          >
+                            Arsipkan
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPendingAction({ wallet, action: 'delete' })
+                              setMenuId(null)
+                            }}
+                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 transition hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-                <div className="mt-4">
+                  <div className="mt-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="max-w-full truncate text-base font-semibold text-ink">
                       {wallet.name}
@@ -249,6 +264,7 @@ export function WalletsPage() {
                   </p>
                 </div>
               </Card>
+            </SectionMotion>
             )
           })}
         </div>

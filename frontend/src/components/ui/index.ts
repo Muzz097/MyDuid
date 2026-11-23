@@ -15,4 +15,20 @@ export { Sheet } from './Sheet'
 export { Skeleton } from './Skeleton'
 export { ToastProvider, useToast } from './Toast'
 export { TransactionItem } from './TransactionItem'
+export { MyDuidLoader } from './MyDuidLoader'
+export type { MyDuidLoaderProps, MyDuidLoaderSize, MyDuidLoaderVariant } from './MyDuidLoader'
+export {
+  PageTransition,
+  PageHeaderMotion,
+  SectionMotion,
+  StaggerContainer,
+  StaggerItem,
+} from './Motion'
+export type {
+  PageTransitionProps,
+  PageHeaderMotionProps,
+  SectionMotionProps,
+  StaggerContainerProps,
+  StaggerItemProps,
+} from './Motion'
 

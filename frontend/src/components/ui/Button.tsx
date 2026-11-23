@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react'
+import { MyDuidLoader } from '@/components/ui/MyDuidLoader'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
@@ -63,7 +63,7 @@ export function Button({
     >
       {loading ? (
         <>
-          <Loader2 className="size-4 animate-spin shrink-0" aria-hidden />
+          <MyDuidLoader variant="inline" size="xs" label="Memproses..." />
           <span>Memproses...</span>
         </>
       ) : (

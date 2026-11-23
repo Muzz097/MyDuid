@@ -12,6 +12,7 @@ import {
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
+import { PageTransition } from '@/components/ui/Motion'
 import { ThemeSwitcher } from '@/components/layout/ThemeSwitcher'
 import {
   AddTransactionProvider,
@@ -264,9 +265,9 @@ function AppShellInner() {
             'pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:px-8 lg:pb-8',
           )}
         >
-          <div key={pathname} className="animate-pop-in">
+          <PageTransition transitionKey={pathname}>
             <Outlet />
-          </div>
+          </PageTransition>
         </main>
 
         {/* 3. Mobile Bottom Navigation */}

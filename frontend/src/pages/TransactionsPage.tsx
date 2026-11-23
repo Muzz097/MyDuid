@@ -5,6 +5,9 @@ import {
   IconButton,
   TransactionItem,
   useToast,
+  PageHeaderMotion,
+  StaggerContainer,
+  StaggerItem,
 } from '@/components/ui'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
 import { useStore } from '@/lib/store'
@@ -102,25 +105,28 @@ export function TransactionsPage() {
 
   return (
     <div className="space-y-6 pb-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink tracking-tight">Riwayat Transaksi</h1>
-          <p className="text-xs text-ink-soft mt-0.5">
-            Total {transactions.length} transaksi tercatat
-          </p>
-        </div>
-        <Button
-          size="sm"
-          variant="primary"
-          onClick={() => openAddTransaction()}
-        >
-          + Catat Transaksi
-        </Button>
-      </div>
+      <PageHeaderMotion
+        title="Riwayat Transaksi"
+        subtitle={`Total ${transactions.length} transaksi tercatat`}
+        action={
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => openAddTransaction()}
+          >
+            + Catat Transaksi
+          </Button>
+        }
+      />
 
-      <div className="space-y-6">
-        {groups.map((group) => (
-          <section key={group.date} className="space-y-2">
+      <StaggerContainer className="space-y-6">
+        {groups.map((group, groupIdx) => (
+          <StaggerItem
+            key={group.date}
+            index={groupIdx}
+            as="section"
+            className="space-y-2"
+          >
             <div className="flex items-center justify-between px-1">
               <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-soft">
                 {formatGroupLabel(group.date)}
@@ -156,9 +162,9 @@ export function TransactionsPage() {
                 })}
               </div>
             </Card>
-          </section>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerContainer>
     </div>
   )
 }

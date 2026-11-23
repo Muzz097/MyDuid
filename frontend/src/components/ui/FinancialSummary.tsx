@@ -86,7 +86,7 @@ export function FinancialSummary({
         </div>
 
         {/* Divider with subtle styling */}
-        <div className="grid grid-cols-2 gap-4 border-t border-line/70 pt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-line/70 pt-4">
           <div className="flex items-center gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-income-50 text-income-600 dark:bg-income-950/40 dark:text-income-400">
               <TrendingUp size={18} strokeWidth={2} aria-hidden />
@@ -102,7 +102,7 @@ export function FinancialSummary({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 border-l border-line/70 pl-4">
+          <div className="flex items-center gap-3 sm:border-l sm:border-line/70 sm:pl-4 border-t border-line/50 pt-3 sm:border-t-0 sm:pt-0">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-expense-50 text-expense-500 dark:bg-expense-950/40 dark:text-expense-400">
               <TrendingDown size={18} strokeWidth={2} aria-hidden />
             </div>

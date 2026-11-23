@@ -21,6 +21,11 @@
   --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
   --animate-fade-up: fade-up 0.5s var(--ease-soft) both;
   --animate-pop-in: pop-in 0.3s var(--ease-soft) both;
+  --animate-page-enter: page-enter 0.28s var(--ease-soft) both;
+  --animate-header-enter: header-enter 0.35s var(--ease-soft) both;
+  --animate-section-enter: section-enter 0.35s var(--ease-soft) both;
+  --animate-stagger-item: stagger-item 0.3s var(--ease-soft) both;
+  --animate-fade-in: fade-in 0.2s ease-out both;
 
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(14px); }
@@ -29,6 +34,26 @@
   @keyframes pop-in {
     from { opacity: 0; transform: scale(0.94); }
     to   { opacity: 1; transform: none; }
+  }
+  @keyframes page-enter {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes header-enter {
+    from { opacity: 0; filter: blur(3px); transform: translateY(-4px); }
+    to   { opacity: 1; filter: blur(0); transform: none; }
+  }
+  @keyframes section-enter {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes stagger-item {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
   }
 }
 
@@ -347,10 +372,80 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* MyDuid Signature 3D Wallet Loader Animations */
+@keyframes myduid-wallet-float {
+  0%, 100% {
+    transform: translateY(0) rotateX(12deg) rotateY(-8deg);
+  }
+  50% {
+    transform: translateY(-5px) rotateX(6deg) rotateY(10deg);
+  }
+}
+
+@keyframes myduid-coin-bob {
+  0%, 100% {
+    transform: translateY(2px) scale(0.92);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-9px) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes myduid-clasp-shine {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.12);
+    filter: brightness(1.3);
+  }
+}
+
+@keyframes myduid-shadow-pulse {
+  0%, 100% {
+    transform: scaleX(1);
+    opacity: 0.15;
+  }
+  50% {
+    transform: scaleX(0.82);
+    opacity: 0.08;
+  }
+}
+
+.myduid-loader-3d {
+  transform-style: preserve-3d;
+  perspective: 400px;
+  animation: myduid-wallet-float 3s ease-in-out infinite;
+}
+
+.myduid-wallet-coin {
+  transform-origin: 24px 15px;
+  animation: myduid-coin-bob 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.myduid-wallet-clasp {
+  transform-origin: 40px 26px;
+  animation: myduid-clasp-shine 2s ease-in-out infinite;
+}
+
+.myduid-wallet-shadow {
+  transform-origin: 24px 43px;
+  animation: myduid-shadow-pulse 3s ease-in-out infinite;
+}
+
+.myduid-loader-inline {
+  animation: myduid-wallet-float 2.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+    transform: none !important;
+    filter: none !important;
   }
 }

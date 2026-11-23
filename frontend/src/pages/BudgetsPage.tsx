@@ -13,6 +13,13 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
+import { MyDuidLoader } from '@/components/ui/MyDuidLoader'
+import {
+  PageHeaderMotion,
+  SectionMotion,
+  StaggerContainer,
+  StaggerItem,
+} from '@/components/ui/Motion'
 import { BudgetFormSheet } from '@/features/budgets/BudgetFormSheet'
 import { ApiError, api } from '@/lib/api'
 import { getIcon } from '@/lib/icons'
@@ -72,10 +79,19 @@ function daysInMonth(month: string): number {
 
 function BudgetSkeleton() {
   return (
-    <div className="space-y-3" aria-busy="true">
-      {Array.from({ length: 4 }, (_, index) => (
-        <Skeleton key={index} className="h-36" />
-      ))}
+    <div className="space-y-4" aria-busy="true">
+      <div className="flex items-center justify-center p-8 bg-card rounded-[var(--radius-card)] border border-line shadow-xs">
+        <MyDuidLoader
+          variant="section"
+          size="md"
+          message="Memuat anggaran bulanan..."
+        />
+      </div>
+      <div className="space-y-3">
+        {Array.from({ length: 3 }, (_, index) => (
+          <Skeleton key={index} className="h-36" />
+        ))}
+      </div>
     </div>
   )
 }
@@ -150,23 +166,22 @@ export function BudgetsPage() {
     elapsedDays === null ? null : daysInMonth(month) - elapsedDays
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-ink">Anggaran</h1>
-          <p className="mt-1 text-sm text-ink-soft">
-            Atur batas pengeluaran per kategori atau dompet.
-          </p>
-        </div>
-        <div className="hidden sm:block">
+    <div className="space-y-6 pb-6">
+      <PageHeaderMotion
+        title="Anggaran"
+        subtitle="Atur batas pengeluaran per kategori atau dompet."
+        action={
           <Button onClick={openCreateForm}>
             <Plus size={18} strokeWidth={1.75} className="mr-2" aria-hidden />
             Tambah anggaran
           </Button>
-        </div>
-      </header>
+        }
+      />
 
-      <div className="flex items-center justify-between rounded-[var(--radius-card)] border border-line bg-card p-2">
+      <SectionMotion
+        className="flex items-center justify-between rounded-[var(--radius-card)] border border-line bg-card p-2"
+        delay={40}
+      >
         <button
           type="button"
           aria-label="Bulan sebelumnya"
@@ -187,7 +202,7 @@ export function BudgetsPage() {
         >
           <ChevronRight size={20} strokeWidth={1.75} aria-hidden />
         </button>
-      </div>
+      </SectionMotion>
 
       {loading ? (
         <BudgetSkeleton />
@@ -206,8 +221,8 @@ export function BudgetsPage() {
           action={{ label: 'Buat anggaran pertama', onClick: openCreateForm }}
         />
       ) : (
-        <div className="space-y-3">
-          {budgets.map((budget) => {
+        <StaggerContainer className="space-y-3">
+          {budgets.map((budget, budgetIdx) => {
             const walletIconKey = wallets.find(
               (wallet) => wallet.id === budget.wallet_id,
             )?.iconKey
@@ -219,82 +234,84 @@ export function BudgetsPage() {
                 ? `${budget.category.name} · ${budget.wallet.name}`
                 : budget.category?.name ?? budget.wallet?.name ?? 'Anggaran'
             return (
-              <Card key={budget.id} className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-expense-50 text-expense-500">
-                    <Icon size={20} strokeWidth={1.75} aria-hidden />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="truncate font-semibold text-ink tracking-tight">{title}</h2>
-                    <p className="mt-0.5 text-xs text-ink-soft">
-                      {budget.category && budget.wallet
-                        ? 'Kategori · Dompet'
-                        : budget.category
-                          ? 'Kategori'
-                          : 'Dompet'}
-                    </p>
+              <StaggerItem key={budget.id} index={budgetIdx}>
+                <Card className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-expense-50 text-expense-500 dark:bg-expense-950/40 dark:text-expense-400">
+                      <Icon size={20} strokeWidth={1.75} aria-hidden />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="truncate font-semibold text-ink tracking-tight">{title}</h2>
+                      <p className="mt-0.5 text-xs text-ink-soft">
+                        {budget.category && budget.wallet
+                          ? 'Kategori · Dompet'
+                          : budget.category
+                            ? 'Kategori'
+                            : 'Dompet'}
+                      </p>
+                    </div>
+                    <div className="relative">
+                      <button
+                        type="button"
+                        aria-label={`Aksi untuk anggaran ${title}`}
+                        aria-expanded={menuId === budget.id}
+                        onClick={() =>
+                          setMenuId((current) =>
+                            current === budget.id ? null : budget.id,
+                          )
+                        }
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition duration-200 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                      >
+                        <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
+                      </button>
+                      {menuId === budget.id ? (
+                        <div className="absolute right-0 top-full z-10 mt-1 min-w-32 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
+                          <button
+                            type="button"
+                            onClick={() => openEditForm(budget)}
+                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                          >
+                            Ubah
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleting(budget)
+                              setMenuId(null)
+                            }}
+                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
-                  <div className="relative">
-                    <button
-                      type="button"
-                      aria-label={`Aksi untuk anggaran ${title}`}
-                      aria-expanded={menuId === budget.id}
-                      onClick={() =>
-                        setMenuId((current) =>
-                          current === budget.id ? null : budget.id,
-                        )
-                      }
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition duration-200 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                    >
-                      <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
-                    </button>
-                    {menuId === budget.id ? (
-                      <div className="absolute right-0 top-full z-10 mt-1 min-w-32 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
-                        <button
-                          type="button"
-                          onClick={() => openEditForm(budget)}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Ubah
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDeleting(budget)
-                            setMenuId(null)
-                          }}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Hapus
-                        </button>
-                      </div>
+
+                  <ProgressBar
+                    value={budget.spent}
+                    max={budget.limit_amount}
+                    label={`${budget.percent}% dari batas`}
+                    markerPercent={elapsedPercent}
+                  />
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
+                    <p className="tabular text-ink-soft">
+                      Sisa {formatRupiah(budget.remaining)} dari{' '}
+                      {formatRupiah(budget.limit_amount)}
+                    </p>
+                    {daysRemaining !== null ? (
+                      <p className="text-ink-soft">
+                        {daysRemaining === 0
+                          ? 'Hari terakhir bulan ini'
+                          : `Sisa ${daysRemaining} hari bulan ini`}
+                      </p>
                     ) : null}
                   </div>
-                </div>
-
-                <ProgressBar
-                  value={budget.spent}
-                  max={budget.limit_amount}
-                  label={`${budget.percent}% dari batas`}
-                  markerPercent={elapsedPercent}
-                />
-                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-sm">
-                  <p className="tabular text-ink-soft">
-                    Sisa {formatRupiah(budget.remaining)} dari{' '}
-                    {formatRupiah(budget.limit_amount)}
-                  </p>
-                  {daysRemaining !== null ? (
-                    <p className="text-ink-soft">
-                      {daysRemaining === 0
-                        ? 'Hari terakhir bulan ini'
-                        : `Sisa ${daysRemaining} hari bulan ini`}
-                    </p>
-                  ) : null}
-                </div>
-              </Card>
+                </Card>
+              </StaggerItem>
             )
           })}
-        </div>
+        </StaggerContainer>
       )}
 
       {!loading && budgets.length > 0 ? (

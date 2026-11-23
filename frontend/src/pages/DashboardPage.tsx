@@ -17,6 +17,8 @@ import {
   Skeleton,
   TransactionItem,
   useToast,
+  MyDuidLoader,
+  SectionMotion,
 } from '@/components/ui'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
 import { useCountUp } from '@/hooks/useCountUp'
@@ -85,7 +87,13 @@ function expenseByCategory(
 function DashboardSkeleton() {
   return (
     <div className="space-y-6" aria-busy="true">
-      <Skeleton className="h-44 w-full" rounded="card" />
+      <div className="flex items-center justify-center p-8 bg-card rounded-[var(--radius-card)] border border-line shadow-xs">
+        <MyDuidLoader
+          variant="section"
+          size="lg"
+          message="Menyiapkan data keuangan Anda..."
+        />
+      </div>
       <div className="space-y-3">
         <Skeleton className="h-5 w-32" />
         <div className="flex gap-3 overflow-hidden">
@@ -165,19 +173,19 @@ export function DashboardPage() {
   return (
     <div className="space-y-6 pb-4">
       {/* 1. Hero financial summary */}
-      <section aria-label="Ringkasan Saldo dan Arus Kas">
+      <SectionMotion as="section" aria-label="Ringkasan Saldo dan Arus Kas" delay={0}>
         <FinancialSummary
           totalBalance={animatedBalance}
           income={income}
           expense={expense}
           balanceHidden={balanceHidden}
           onToggleHide={() => setBalanceHidden((v) => !v)}
-          className="animate-fade-up shadow-[var(--shadow-card)]"
+          className="shadow-[var(--shadow-card)]"
         />
-      </section>
+      </SectionMotion>
 
       {/* 2. Dompet Section */}
-      <section aria-label="Daftar Dompet">
+      <SectionMotion as="section" aria-label="Daftar Dompet" delay={60}>
         <SectionHeader
           title="Dompet & Rekening"
           subtitle={`${wallets.length} sumber dana aktif`}
@@ -236,10 +244,10 @@ export function DashboardPage() {
             })}
           </div>
         )}
-      </section>
+      </SectionMotion>
 
       {/* 3. Progres Anggaran & Pengeluaran Per Kategori (2 Columns on large) */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <SectionMotion className="grid grid-cols-1 gap-6 lg:grid-cols-2" delay={120}>
         {/* Progres Anggaran */}
         <section aria-label="Progres Anggaran" className="flex flex-col">
           <SectionHeader
@@ -396,10 +404,10 @@ export function DashboardPage() {
             )}
           </Card>
         </section>
-      </div>
+      </SectionMotion>
 
       {/* 4. Transaksi Terakhir Section */}
-      <section aria-label="Transaksi Terakhir">
+      <SectionMotion as="section" aria-label="Transaksi Terakhir" delay={180}>
         <SectionHeader
           title="Transaksi Terakhir"
           subtitle="Catatan keuangan baru-baru ini"
@@ -447,7 +455,7 @@ export function DashboardPage() {
             </div>
           )}
         </Card>
-      </section>
+      </SectionMotion>
     </div>
   )
 }

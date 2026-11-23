@@ -1101,7 +1101,27 @@ Before marking a task complete, check:
 
 ---
 
-# 20. Final Design Direction
+# 20. Motion & Loading System (Task 1E Standard)
+
+## 20.1 Primitives
+MyDuid menggunakan motion system yang ringan, berfokus pada kejelasan finansial tanpa memperlambat interaksi pengguna:
+- `PageTransition`: Pembungkus route level dengan `transitionKey` (animasi `fade-in` + translasi vertikal halus 6px).
+- `PageHeaderMotion`: Transisi judul halaman blur-to-sharp (`header-enter`) dan deskripsi dengan durasi singkat (0.35s).
+- `SectionMotion`: Entrance untuk container/widget/kartu dengan konfigurasi `delay` terukur.
+- `StaggerContainer` & `StaggerItem`: Animasi bertahap untuk list transaksi dan item anggaran (maksimal delay 280ms agar interaksi tetap responsif).
+- `prefers-reduced-motion`: Wajib dihormati di CSS global (`index.css`), menonaktifkan delay, filter blur, dan transform gerakan.
+
+## 20.2 MyDuid Signature Loader (`MyDuidLoader`)
+Komponen loader khas berbentuk folding wallet 3D SVG dengan koin melayang bertema tokens:
+- Variasi:
+  - `inline`: Digunakan dalam tombol (`Button.tsx`) atau indikator status ringkas.
+  - `section`: Digunakan saat memuat area konten (misal bagian daftar dompet, anggaran, atau kartu ringkasan).
+  - `full`: Digunakan untuk overlay transisi penting dengan backdrop blur halus.
+- Parameter teks `message`: Menampilkan pesan ramah kontekstual seperti *"Menyiapkan data keuangan Anda..."*.
+
+---
+
+# 21. Final Design Direction
 
 MyDuid should feel like a modern, warm, intelligent financial companion.
 
