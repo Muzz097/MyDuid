@@ -21,4 +21,5 @@ export function getIcon(key: string): LucideIcon {
   return registry[key] ?? CircleHelp
 }
 
+export const iconRegistry = registry
 export const iconKeys = Object.keys(registry)

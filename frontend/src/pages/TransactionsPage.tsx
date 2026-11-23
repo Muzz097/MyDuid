@@ -1,11 +1,12 @@
 import { Receipt, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
-import { MoneyText } from '@/components/ui/MoneyText'
-import { useToast } from '@/components/ui/Toast'
+import {
+  Button,
+  Card,
+  IconButton,
+  TransactionItem,
+  useToast,
+} from '@/components/ui'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
-import { cn } from '@/lib/cn'
-import { getIcon } from '@/lib/icons'
 import { useStore } from '@/lib/store'
 import type { Transaction } from '@/types'
 
@@ -39,11 +40,6 @@ function formatGroupLabel(iso: string): string {
     month: 'short',
     year: 'numeric',
   })
-}
-
-function formatShortDate(iso: string): string {
-  const date = new Date(`${iso}T00:00:00`)
-  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
 }
 
 type Group = {
@@ -88,16 +84,16 @@ export function TransactionsPage() {
   if (transactions.length === 0) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
-        <span className="inline-flex size-16 items-center justify-center rounded-full bg-muted text-ink-soft">
+        <span className="inline-flex size-16 items-center justify-center rounded-2xl bg-muted text-ink-soft">
           <Receipt size={32} strokeWidth={1.75} aria-hidden />
         </span>
         <div className="space-y-1">
           <h1 className="text-xl font-semibold text-ink">Belum ada transaksi</h1>
-          <p className="text-sm text-ink-soft">
-            Catat pemasukan atau pengeluaran untuk mulai melacak.
+          <p className="text-sm text-ink-soft max-w-sm">
+            Catat pemasukan atau pengeluaran harian Anda untuk mulai melacak arus uang secara otomatis.
           </p>
         </div>
-        <Button variant="primary" size="lg" onClick={openAddTransaction}>
+        <Button variant="primary" size="lg" onClick={() => openAddTransaction()}>
           Catat transaksi pertama
         </Button>
       </div>
@@ -105,68 +101,64 @@ export function TransactionsPage() {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-ink">Transaksi</h1>
+    <div className="space-y-6 pb-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-ink tracking-tight">Riwayat Transaksi</h1>
+          <p className="text-xs text-ink-soft mt-0.5">
+            Total {transactions.length} transaksi tercatat
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="primary"
+          onClick={() => openAddTransaction()}
+        >
+          + Catat Transaksi
+        </Button>
+      </div>
 
-      {groups.map((group) => (
-        <section key={group.date} className="space-y-2">
-          <h2 className="text-sm font-medium text-ink-soft">
-            {formatGroupLabel(group.date)}
-          </h2>
-          <Card className="!p-0">
-            <ul className="divide-y divide-line px-4">
-              {group.items.map((tx) => {
-                const category = categoryById.get(tx.categoryId)
-                const wallet = walletById.get(tx.walletId)
-                const title = tx.notes?.trim() || category?.name || 'Transaksi'
-                const TxIcon = getIcon(category?.iconKey ?? 'default')
-                const toneClass =
-                  tx.type === 'income'
-                    ? 'bg-income-50 text-income-600'
-                    : 'bg-expense-50 text-expense-500'
+      <div className="space-y-6">
+        {groups.map((group) => (
+          <section key={group.date} className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-soft">
+                {formatGroupLabel(group.date)}
+              </h2>
+              <span className="text-[11px] text-ink-soft">
+                {group.items.length} transaksi
+              </span>
+            </div>
+            <Card className="!p-0 overflow-hidden divide-y divide-line">
+              <div className="divide-y divide-line px-4">
+                {group.items.map((tx) => {
+                  const category = categoryById.get(tx.categoryId)
+                  const wallet = walletById.get(tx.walletId)
+                  const title = tx.notes?.trim() || category?.name || 'Transaksi'
 
-                return (
-                  <li
-                    key={tx.id}
-                    className="flex min-h-11 items-center gap-3 py-3"
-                  >
-                    <span
-                      className={cn(
-                        'inline-flex size-10 shrink-0 items-center justify-center rounded-full',
-                        toneClass,
-                      )}
-                      aria-hidden
-                    >
-                      <TxIcon size={18} strokeWidth={1.75} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink">
-                        {title}
-                      </p>
-                      <p className="truncate text-xs text-ink-soft">
-                        {wallet?.name ?? 'Dompet'} · {formatShortDate(tx.date)}
-                      </p>
-                    </div>
-                    <MoneyText
-                      amount={tx.amount}
-                      type={tx.type}
-                      className="shrink-0 text-sm"
+                  return (
+                    <TransactionItem
+                      key={tx.id}
+                      transaction={tx}
+                      category={category}
+                      wallet={wallet}
+                      action={
+                        <IconButton
+                          label={`Hapus ${title}`}
+                          icon={<Trash2 size={16} strokeWidth={1.75} aria-hidden />}
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleDelete(tx)}
+                        />
+                      }
                     />
-                    <button
-                      type="button"
-                      aria-label={`Hapus ${title}`}
-                      onClick={() => handleDelete(tx)}
-                      className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition duration-200 hover:bg-danger-100 hover:text-danger-500 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                    >
-                      <Trash2 size={18} strokeWidth={1.75} aria-hidden />
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </Card>
-        </section>
-      ))}
+                  )
+                })}
+              </div>
+            </Card>
+          </section>
+        ))}
+      </div>
     </div>
   )
 }

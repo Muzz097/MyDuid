@@ -8,11 +8,14 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { CheckCircle2 } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Info } from 'lucide-react'
 import { cn } from '@/lib/cn'
+
+type ToastType = 'success' | 'error' | 'info'
 
 type ToastShowOptions = {
   message: string
+  type?: ToastType
   actionLabel?: string
   onAction?: () => void
   duration?: number
@@ -54,10 +57,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [clearTimer])
 
   const show = useCallback(
-    ({ message, actionLabel, onAction, duration = 5000 }: ToastShowOptions) => {
+    ({
+      message,
+      type = 'success',
+      actionLabel,
+      onAction,
+      duration = 5000,
+    }: ToastShowOptions) => {
       clearTimer()
       idRef.current += 1
-      setToast({ id: idRef.current, message, actionLabel, onAction, duration })
+      setToast({
+        id: idRef.current,
+        message,
+        type,
+        actionLabel,
+        onAction,
+        duration,
+      })
       setVisible(true)
       timerRef.current = window.setTimeout(() => {
         setVisible(false)
@@ -85,18 +101,34 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             role="status"
             className={cn(
-              'pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-[var(--radius-control)] bg-ink px-4 py-3 text-sm text-white shadow-lg transition duration-[250ms] ease-[var(--ease-soft)]',
+              'pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-[var(--radius-control)] bg-ink px-4 py-3 text-sm text-white shadow-xl transition duration-[250ms] ease-[var(--ease-soft)] border border-line/20',
               visible
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-3 opacity-0',
+                ? 'translate-y-0 opacity-100 scale-100'
+                : 'translate-y-3 opacity-0 scale-95',
             )}
           >
-            <CheckCircle2
-              size={20}
-              strokeWidth={1.75}
-              className="shrink-0 text-income-400"
-              aria-hidden
-            />
+            {toast.type === 'error' ? (
+              <AlertCircle
+                size={20}
+                strokeWidth={1.75}
+                className="shrink-0 text-danger-500"
+                aria-hidden
+              />
+            ) : toast.type === 'info' ? (
+              <Info
+                size={20}
+                strokeWidth={1.75}
+                className="shrink-0 text-info-500"
+                aria-hidden
+              />
+            ) : (
+              <CheckCircle2
+                size={20}
+                strokeWidth={1.75}
+                className="shrink-0 text-income-400"
+                aria-hidden
+              />
+            )}
             <p className="min-w-0 flex-1 font-medium">{toast.message}</p>
             {toast.actionLabel && toast.onAction ? (
               <button
@@ -105,7 +137,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   toast.onAction?.()
                   hide()
                 }}
-                className="shrink-0 rounded-[var(--radius-control)] px-2 py-1 font-semibold text-brand-300 transition duration-200 hover:text-brand-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                className="shrink-0 rounded-[var(--radius-control)] px-2.5 py-1 text-xs font-semibold text-brand-300 transition duration-150 hover:bg-white/10 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
               >
                 {toast.actionLabel}
               </button>
@@ -122,3 +154,4 @@ export function useToast(): ToastContextValue {
   if (!ctx) throw new Error('useToast harus di dalam ToastProvider')
   return ctx
 }
+

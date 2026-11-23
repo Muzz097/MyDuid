@@ -225,8 +225,8 @@ export function BudgetsPage() {
                     <Icon size={20} strokeWidth={1.75} aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <h2 className="truncate font-semibold text-ink">{title}</h2>
-                    <p className="mt-1 text-sm text-ink-soft">
+                    <h2 className="truncate font-semibold text-ink tracking-tight">{title}</h2>
+                    <p className="mt-0.5 text-xs text-ink-soft">
                       {budget.category && budget.wallet
                         ? 'Kategori · Dompet'
                         : budget.category

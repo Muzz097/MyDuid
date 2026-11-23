@@ -236,15 +236,15 @@ export function WalletsPage() {
                       {wallet.name}
                     </h2>
                     {!wallet.isActive ? (
-                      <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-ink-soft">
+                      <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-ink-soft">
                         Diarsipkan
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-sm text-ink-soft">
+                  <p className="mt-0.5 text-xs text-ink-soft capitalize">
                     {walletTypeLabels[wallet.type]}
                   </p>
-                  <p className="mt-3 tabular text-lg font-bold text-ink">
+                  <p className="mt-3 tabular-nums text-lg font-bold text-ink tracking-tight">
                     {formatRupiah(wallet.balance)}
                   </p>
                 </div>
