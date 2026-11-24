@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->withHeaders(['Origin' => 'http://localhost:5173', 'Accept' => 'application/json']);
+    $this->withHeaders(['Origin' => 'http://localhost:5174', 'Accept' => 'application/json']);
     $this->u = User::factory()->create();
     $this->w = $this->u->wallets()->create(['name' => 'K', 'type' => 'cash', 'opening_balance' => 100000, 'icon_type' => 'preset', 'icon_key' => 'cash']);
     $this->ce = $this->u->categories()->create(['name' => 'Makan', 'type' => 'expense']);
@@ -91,6 +91,24 @@ it('memfilter berdasarkan bulan', function () {
     $this->postJson('/api/transactions', txBody($this, ['transaction_date' => '2026-11-10']));
 
     $this->getJson('/api/transactions?month=2026-11')->assertJsonCount(1, 'data');
+});
+
+it('memfilter berdasarkan tanggal spesifik', function () {
+    $this->actingAs($this->u);
+    $this->postJson('/api/transactions', txBody($this, ['transaction_date' => '2026-11-10']));
+    $this->postJson('/api/transactions', txBody($this, ['transaction_date' => '2026-11-15']));
+
+    $this->getJson('/api/transactions?date=2026-11-15')->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.transaction_date', '2026-11-15');
+});
+
+it('mendukung custom per_page', function () {
+    $this->actingAs($this->u);
+    for ($i = 1; $i <= 25; $i++) {
+        $this->postJson('/api/transactions', txBody($this, ['transaction_date' => '2026-11-10', 'notes' => "Tx {$i}"]));
+    }
+
+    $this->getJson('/api/transactions?month=2026-11&per_page=50')->assertJsonCount(25, 'data');
 });
 
 it('memerlukan login', function () {

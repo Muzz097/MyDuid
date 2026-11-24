@@ -9,8 +9,13 @@ import {
 import { AddTransactionSheet } from '@/features/transactions/AddTransactionSheet'
 import type { TransactionType } from '@/types'
 
+type OpenAddTransactionParam =
+  | TransactionType
+  | { type?: TransactionType; date?: string }
+  | unknown
+
 type AddTransactionContextValue = {
-  openAddTransaction: (type?: TransactionType | unknown) => void
+  openAddTransaction: (param?: OpenAddTransactionParam) => void
 }
 
 const AddTransactionContext =
@@ -19,12 +24,23 @@ const AddTransactionContext =
 export function AddTransactionProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [initialType, setInitialType] = useState<TransactionType>('expense')
+  const [initialDate, setInitialDate] = useState<string | undefined>(undefined)
 
-  const openAddTransaction = useCallback((type?: TransactionType | unknown) => {
-    if (type === 'income' || type === 'expense') {
-      setInitialType(type)
+  const openAddTransaction = useCallback((param?: OpenAddTransactionParam) => {
+    if (typeof param === 'string' && (param === 'income' || param === 'expense')) {
+      setInitialType(param)
+      setInitialDate(undefined)
+    } else if (param && typeof param === 'object' && ('type' in param || 'date' in param)) {
+      const obj = param as { type?: TransactionType; date?: string }
+      if (obj.type === 'income' || obj.type === 'expense') {
+        setInitialType(obj.type)
+      } else {
+        setInitialType('expense')
+      }
+      setInitialDate(obj.date)
     } else {
       setInitialType('expense')
+      setInitialDate(undefined)
     }
     setOpen(true)
   }, [])
@@ -40,6 +56,7 @@ export function AddTransactionProvider({ children }: { children: ReactNode }) {
       <AddTransactionSheet
         open={open}
         initialType={initialType}
+        initialDate={initialDate}
         onClose={() => setOpen(false)}
       />
     </AddTransactionContext.Provider>

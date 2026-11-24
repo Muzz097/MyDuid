@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Bot,
+  Calendar,
   ChevronRight,
   Home,
   LogOut,
@@ -10,7 +11,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useState } from 'react'
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { PageTransition } from '@/components/ui/Motion'
 import { ThemeSwitcher } from '@/components/layout/ThemeSwitcher'
@@ -60,6 +61,7 @@ const sidebarGroups: NavGroup[] = [
   {
     title: 'Analisis',
     items: [
+      { to: '/kalender', label: 'Kalender', icon: Calendar },
       {
         label: 'Laporan',
         icon: BarChart3,
@@ -87,6 +89,8 @@ function getPageMeta(pathname: string): { title: string; subtitle: string } {
       return { title: 'Beranda', subtitle: 'Ringkasan keuangan dan aktivitas Anda' }
     case '/transaksi':
       return { title: 'Transaksi', subtitle: 'Kelola dan lacak riwayat transaksi' }
+    case '/kalender':
+      return { title: 'Kalender Keuangan', subtitle: 'Pantau arus kas harian dan riwayat tanggal' }
     case '/dompet':
       return { title: 'Dompet', subtitle: 'Atur rekening dan sumber dana' }
     case '/anggaran':
@@ -260,7 +264,22 @@ function AppShellInner() {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <NavLink
+              to="/kalender"
+              className={({ isActive }) =>
+                cn(
+                  'inline-flex size-9 items-center justify-center rounded-[var(--radius-control)] transition duration-200 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
+                  isActive
+                    ? 'bg-brand-500/10 text-brand-600 dark:bg-brand-500/20 dark:text-brand-400'
+                    : 'text-ink-soft hover:bg-muted hover:text-ink',
+                )
+              }
+              title="Kalender Keuangan"
+              aria-label="Kalender Keuangan"
+            >
+              <Calendar size={18} strokeWidth={1.75} aria-hidden />
+            </NavLink>
             <ThemeSwitcher />
           </div>
         </header>

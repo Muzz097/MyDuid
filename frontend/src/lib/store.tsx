@@ -47,6 +47,7 @@ interface Store {
   transactions: Transaction[]
   loading: boolean
   error: string | null
+  version: number
   refresh: () => Promise<void>
   addTransaction: (tx: NewTransactionInput) => Promise<Transaction>
   removeTransaction: (id: number) => Promise<void>
@@ -102,6 +103,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [version, setVersion] = useState(0)
 
   const refresh = useCallback(async () => {
     setLoading(true)
@@ -116,6 +118,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setWallets(walletsRes.data.map(mapWallet))
       setCategories(categoriesRes.data.map(mapCategory))
       setTransactions(transactionsRes.data.map(mapTransaction))
+      setVersion((v) => v + 1)
     } catch (err) {
       const message =
         err instanceof ApiError ? err.message : 'Gagal memuat data'
@@ -184,6 +187,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       transactions,
       loading,
       error,
+      version,
       refresh,
       addTransaction,
       removeTransaction,
@@ -195,6 +199,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       transactions,
       loading,
       error,
+      version,
       refresh,
       addTransaction,
       removeTransaction,

@@ -15,6 +15,7 @@ type ToastType = 'success' | 'error' | 'info'
 
 type ToastShowOptions = {
   message: string
+  description?: string
   type?: ToastType
   actionLabel?: string
   onAction?: () => void
@@ -59,6 +60,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const show = useCallback(
     ({
       message,
+      description,
       type = 'success',
       actionLabel,
       onAction,
@@ -69,6 +71,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       setToast({
         id: idRef.current,
         message,
+        description,
         type,
         actionLabel,
         onAction,
@@ -93,7 +96,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {toast ? (
         <div
           className={cn(
-            'pointer-events-none fixed inset-x-0 z-[60] flex justify-center px-4',
+            'pointer-events-none fixed inset-x-0 z-[70] flex justify-center px-4',
             'bottom-[calc(5.5rem+env(safe-area-inset-bottom))] lg:bottom-6',
           )}
           aria-live="polite"
@@ -101,35 +104,46 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             role="status"
             className={cn(
-              'pointer-events-auto flex w-full max-w-md items-center gap-3 rounded-[var(--radius-control)] bg-ink px-4 py-3 text-sm text-white shadow-xl transition duration-[250ms] ease-[var(--ease-soft)] border border-line/20',
+              'pointer-events-auto flex w-full max-w-md items-center gap-3.5 rounded-[var(--radius-control)] border border-line bg-card/95 px-4 py-3 text-ink shadow-xl backdrop-blur-md transition duration-[250ms] ease-[var(--ease-soft)] dark:border-line/40',
               visible
                 ? 'translate-y-0 opacity-100 scale-100'
                 : 'translate-y-3 opacity-0 scale-95',
             )}
           >
             {toast.type === 'error' ? (
-              <AlertCircle
-                size={20}
-                strokeWidth={1.75}
-                className="shrink-0 text-danger-500"
-                aria-hidden
-              />
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-expense-50 text-expense-600 dark:bg-expense-950/50 dark:text-expense-400">
+                <AlertCircle
+                  size={20}
+                  strokeWidth={2}
+                  className="shrink-0"
+                  aria-hidden
+                />
+              </span>
             ) : toast.type === 'info' ? (
-              <Info
-                size={20}
-                strokeWidth={1.75}
-                className="shrink-0 text-info-500"
-                aria-hidden
-              />
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-info-50 text-info-600 dark:bg-info-950/50 dark:text-info-400">
+                <Info
+                  size={20}
+                  strokeWidth={2}
+                  className="shrink-0"
+                  aria-hidden
+                />
+              </span>
             ) : (
-              <CheckCircle2
-                size={20}
-                strokeWidth={1.75}
-                className="shrink-0 text-income-400"
-                aria-hidden
-              />
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-income-50 text-income-600 dark:bg-income-950/50 dark:text-income-400">
+                <CheckCircle2
+                  size={20}
+                  strokeWidth={2}
+                  className="shrink-0"
+                  aria-hidden
+                />
+              </span>
             )}
-            <p className="min-w-0 flex-1 font-medium">{toast.message}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-ink leading-snug">{toast.message}</p>
+              {toast.description && (
+                <p className="mt-0.5 text-xs text-ink-soft leading-normal">{toast.description}</p>
+              )}
+            </div>
             {toast.actionLabel && toast.onAction ? (
               <button
                 type="button"
@@ -137,7 +151,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                   toast.onAction?.()
                   hide()
                 }}
-                className="shrink-0 rounded-[var(--radius-control)] px-2.5 py-1 text-xs font-semibold text-brand-300 transition duration-150 hover:bg-white/10 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                className="shrink-0 rounded-[calc(var(--radius-control)-4px)] px-2.5 py-1 text-xs font-semibold text-brand-600 transition duration-150 hover:bg-brand-50 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-brand-400 dark:hover:bg-brand-950/50"
               >
                 {toast.actionLabel}
               </button>

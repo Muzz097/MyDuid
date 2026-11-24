@@ -15,6 +15,7 @@ type AddTransactionSheetProps = {
   open: boolean
   onClose: () => void
   initialType?: TransactionType
+  initialDate?: string
 }
 
 const LAST_CATEGORY_KEY = 'myduid:lastCategoryId'
@@ -59,6 +60,7 @@ export function AddTransactionSheet({
   open,
   onClose,
   initialType = 'expense',
+  initialDate,
 }: AddTransactionSheetProps) {
   const { wallets, categories, addTransaction, removeTransaction } = useStore()
   const { show } = useToast()
@@ -71,8 +73,9 @@ export function AddTransactionSheet({
   const [digits, setDigits] = useState('')
   const [categoryId, setCategoryId] = useState<number | null>(null)
   const [walletId, setWalletId] = useState<number | null>(null)
-  const [date, setDate] = useState(todayJakarta)
+  const [date, setDate] = useState(() => initialDate ?? todayJakarta())
   const [notes, setNotes] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const amount = digits === '' ? 0 : Number(digits)
 
@@ -89,7 +92,7 @@ export function AddTransactionSheet({
     if (!open) return
     setType(initialType)
     setDigits('')
-    setDate(todayJakarta())
+    setDate(initialDate ?? todayJakarta())
     setNotes('')
 
     const lastWallet = readStoredId(LAST_WALLET_KEY)
@@ -127,10 +130,15 @@ export function AddTransactionSheet({
   }
 
   async function handleSave() {
+    if (isSubmitting) return
     if (!Number.isInteger(amount) || amount <= 0) return
     if (categoryId == null || walletId == null) return
 
+    setIsSubmitting(true)
     try {
+      const selectedCategory = categories.find((c) => c.id === categoryId)
+      const selectedWallet = activeWallets.find((w) => w.id === walletId)
+
       const tx = await addTransaction({
         walletId,
         categoryId,
@@ -144,18 +152,28 @@ export function AddTransactionSheet({
       writeStoredId(LAST_WALLET_KEY, walletId)
       onClose()
 
+      const detailText = `${selectedCategory?.name ?? (type === 'income' ? 'Pemasukan' : 'Pengeluaran')} • ${formatRupiah(amount)}${selectedWallet ? ` (${selectedWallet.name})` : ''}`
+
       show({
-        message: 'Transaksi disimpan',
+        message: 'Transaksi berhasil disimpan',
+        description: detailText,
+        type: 'success',
         actionLabel: 'Batalkan',
         onAction: () => {
           void removeTransaction(tx.id)
-            .then(() => show({ message: 'Dibatalkan' }))
+            .then(() =>
+              show({
+                message: 'Transaksi dibatalkan',
+                type: 'info',
+              }),
+            )
             .catch((error: unknown) =>
               show({
                 message:
                   error instanceof Error
                     ? error.message
                     : 'Transaksi gagal dibatalkan',
+                type: 'error',
               }),
             )
         },
@@ -164,11 +182,15 @@ export function AddTransactionSheet({
       show({
         message:
           error instanceof Error ? error.message : 'Transaksi gagal disimpan',
+        type: 'error',
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   const canSave =
+    !isSubmitting &&
     Number.isInteger(amount) &&
     amount > 0 &&
     categoryId != null &&
@@ -294,6 +316,7 @@ export function AddTransactionSheet({
           size="lg"
           fullWidth
           disabled={!canSave}
+          loading={isSubmitting}
           onClick={handleSave}
         >
           Simpan

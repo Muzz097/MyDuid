@@ -12,6 +12,7 @@ import { MorePage } from '@/pages/MorePage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { TransactionsPage } from '@/pages/TransactionsPage'
 import { BudgetsPage } from '@/pages/BudgetsPage'
+import { CalendarPage } from '@/pages/CalendarPage'
 import { WalletsPage } from '@/pages/WalletsPage'
 
 export default function App() {
@@ -37,6 +38,7 @@ export default function App() {
             <Route element={<AppShell />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/transaksi" element={<TransactionsPage />} />
+              <Route path="/kalender" element={<CalendarPage />} />
               <Route path="/dompet" element={<WalletsPage />} />
               <Route path="/anggaran" element={<BudgetsPage />} />
               <Route path="/lainnya" element={<MorePage />} />

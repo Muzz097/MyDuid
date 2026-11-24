@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import {
   Button,
   Card,
-  CashflowCard,
   SectionHeader,
   Skeleton,
   TransactionItem,
@@ -19,6 +18,7 @@ import type { DashboardData } from '@/types'
 import { DashboardGreetingHeader } from '@/features/dashboard/DashboardGreetingHeader'
 import { TotalAssetCard } from '@/features/dashboard/TotalAssetCard'
 import { WalletCardItem } from '@/features/dashboard/WalletCardItem'
+import { MonthlySummaryCards } from '@/features/dashboard/MonthlySummaryCards'
 import { CashFlowChart } from '@/features/dashboard/CashFlowChart'
 import { CategoryComposition } from '@/features/dashboard/CategoryComposition'
 import { BudgetProgressCard, type DashboardBudget } from '@/features/dashboard/BudgetProgressCard'
@@ -34,7 +34,7 @@ function currentMonth(): string {
 export function DashboardPage() {
   const { openAddTransaction } = useAddTransaction()
   const { show } = useToast()
-  const { wallets: storeWallets } = useStore()
+  const { wallets: storeWallets, version } = useStore()
 
   const [balanceHidden, setBalanceHidden] = useState(false)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
@@ -80,7 +80,7 @@ export function DashboardPage() {
   useEffect(() => {
     void loadDashboard()
     void loadBudgets()
-  }, [loadDashboard, loadBudgets])
+  }, [loadDashboard, loadBudgets, version])
 
   // Count up animation for balance
   const rawBalance = dashboardData?.total_balance ?? 0
@@ -114,21 +114,8 @@ export function DashboardPage() {
         )}
       </SectionMotion>
 
-      {/* 3. Monthly Summary Cards (Income, Expense, Net Cash Flow) */}
-      <SectionMotion as="section" aria-label="Ringkasan Bulanan" delay={40}>
-        {dashLoading && !dashboardData ? (
-          <Skeleton className="h-28 w-full" rounded="card" />
-        ) : (
-          <CashflowCard
-            income={income}
-            expense={expense}
-            hidden={balanceHidden}
-          />
-        )}
-      </SectionMotion>
-
-      {/* 4. Dompet Section */}
-      <SectionMotion as="section" aria-label="Daftar Dompet" delay={80}>
+      {/* 3. Dompet Section */}
+      <SectionMotion as="section" aria-label="Daftar Dompet" delay={40}>
         <SectionHeader
           title="Dompet & Rekening"
           subtitle={`${wallets.length} sumber dana aktif`}
@@ -174,6 +161,26 @@ export function DashboardPage() {
               />
             ))}
           </div>
+        )}
+      </SectionMotion>
+
+      {/* 4. Monthly Summary Cards (Income, Expense, Net Cash Flow) -> Clickable to /kalender */}
+      <SectionMotion as="section" aria-label="Ringkasan Bulanan" delay={80}>
+        {dashLoading && !dashboardData ? (
+          <div className="space-y-3">
+            <Skeleton className="h-7 w-48 rounded-lg" />
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+              <Skeleton className="h-28 w-full" rounded="card" />
+              <Skeleton className="h-28 w-full" rounded="card" />
+              <Skeleton className="h-28 w-full" rounded="card" />
+            </div>
+          </div>
+        ) : (
+          <MonthlySummaryCards
+            income={income}
+            expense={expense}
+            balanceHidden={balanceHidden}
+          />
         )}
       </SectionMotion>
 

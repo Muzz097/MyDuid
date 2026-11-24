@@ -25,14 +25,18 @@ class TransactionController extends Controller
     {
         $request->validate([
             'month' => ['nullable', 'date_format:Y-m'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
             'wallet_id' => ['nullable', 'integer'],
             'category_id' => ['nullable', 'integer'],
             'type' => ['nullable', 'in:income,expense'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:500'],
         ]);
 
         $q = $request->user()->transactions()->with(['wallet:id,name', 'category:id,name,icon_key']);
 
-        if ($m = $request->query('month')) {
+        if ($d = $request->query('date')) {
+            $q->where('transaction_date', $d);
+        } elseif ($m = $request->query('month')) {
             $start = Carbon::createFromFormat('Y-m-d', $m.'-01', 'Asia/Jakarta')->startOfMonth();
             $q->whereBetween('transaction_date', [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()]);
         }
@@ -42,8 +46,10 @@ class TransactionController extends Controller
             }
         }
 
+        $perPage = (int) $request->query('per_page', 20);
+
         return TransactionResource::collection(
-            $q->orderByDesc('transaction_date')->orderByDesc('id')->paginate(20)
+            $q->orderByDesc('transaction_date')->orderByDesc('id')->paginate($perPage)
         );
     }
 
