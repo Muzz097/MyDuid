@@ -21,6 +21,7 @@ import {
 import { QuickActionSheet } from '@/features/transactions/QuickActionSheet'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/cn'
+import { useHideOnScroll } from '@/hooks/useHideOnScroll'
 
 type NavItem = {
   to?: string
@@ -123,6 +124,7 @@ function AppShellInner() {
   const { user, logout } = useAuth()
   const { openAddTransaction } = useAddTransaction()
   const [quickActionOpen, setQuickActionOpen] = useState(false)
+  const headerHidden = useHideOnScroll()
 
   const meta = getPageMeta(pathname)
 
@@ -234,7 +236,12 @@ function AppShellInner() {
       {/* Main Container */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* 2. Header */}
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-line bg-card/85 px-4 backdrop-blur-md lg:px-8">
+        <header
+          className={cn(
+            'sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-line bg-card/85 px-4 backdrop-blur-md transition duration-200 lg:px-8 lg:translate-y-0 lg:opacity-100',
+            headerHidden && '-translate-y-full opacity-0',
+          )}
+        >
           {/* Mobile Brand */}
           <div className="flex items-center gap-2.5 lg:hidden">
             <div className="flex size-9 items-center justify-center rounded-[var(--radius-control)] bg-brand-500 font-bold text-white shadow-sm shadow-brand-500/20">

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import {
   Button,
   Card,
+  CashflowCard,
   SectionHeader,
   Skeleton,
   TransactionItem,
@@ -17,7 +18,6 @@ import { useStore } from '@/lib/store'
 import type { DashboardData } from '@/types'
 import { DashboardGreetingHeader } from '@/features/dashboard/DashboardGreetingHeader'
 import { TotalAssetCard } from '@/features/dashboard/TotalAssetCard'
-import { MonthlySummaryCards } from '@/features/dashboard/MonthlySummaryCards'
 import { WalletCardItem } from '@/features/dashboard/WalletCardItem'
 import { CashFlowChart } from '@/features/dashboard/CashFlowChart'
 import { CategoryComposition } from '@/features/dashboard/CategoryComposition'
@@ -117,16 +117,12 @@ export function DashboardPage() {
       {/* 3. Monthly Summary Cards (Income, Expense, Net Cash Flow) */}
       <SectionMotion as="section" aria-label="Ringkasan Bulanan" delay={40}>
         {dashLoading && !dashboardData ? (
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
-            <Skeleton className="h-28" rounded="card" />
-            <Skeleton className="h-28" rounded="card" />
-            <Skeleton className="h-28" rounded="card" />
-          </div>
+          <Skeleton className="h-28 w-full" rounded="card" />
         ) : (
-          <MonthlySummaryCards
+          <CashflowCard
             income={income}
             expense={expense}
-            balanceHidden={balanceHidden}
+            hidden={balanceHidden}
           />
         )}
       </SectionMotion>

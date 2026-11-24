@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Bell, Sparkles } from 'lucide-react'
-import { ThemeSwitcher } from '@/components/layout/ThemeSwitcher'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/cn'
 
@@ -26,49 +25,13 @@ function getGreetingWIB(): string {
 export function DashboardGreetingHeader({ className }: DashboardGreetingHeaderProps) {
   const { user } = useAuth()
   const [greeting] = useState(() => getGreetingWIB())
-  const [isVisibleMobile, setIsVisibleMobile] = useState(true)
-
-  // Auto-hide on mobile scroll down, reappear when scroll up or at top
-  useEffect(() => {
-    let lastScrollY = window.scrollY
-    let ticking = false
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          // If at the very top (within 20px), always show
-          if (currentScrollY <= 20) {
-            setIsVisibleMobile(true)
-          } else if (currentScrollY > lastScrollY && currentScrollY > 60) {
-            // Scrolling down -> hide header on mobile
-            setIsVisibleMobile(false)
-          } else if (currentScrollY < lastScrollY) {
-            // Scrolling up -> show header on mobile
-            setIsVisibleMobile(true)
-          }
-          lastScrollY = currentScrollY
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   // Display user's first name if available
   const firstName = user?.name ? user.name.split(' ')[0] : 'Kawan'
 
   return (
     <div
-      className={cn(
-        'transition-all duration-300 ease-out',
-        // On mobile, animate transform up to hide when scrolling down
-        !isVisibleMobile && '-translate-y-8 opacity-0 pointer-events-none md:translate-y-0 md:opacity-100 md:pointer-events-auto',
-        className,
-      )}
+      className={cn(className)}
     >
       <div className="flex items-center justify-between gap-4 pb-2">
         <div className="flex items-center gap-3 min-w-0">
@@ -92,7 +55,7 @@ export function DashboardGreetingHeader({ className }: DashboardGreetingHeaderPr
           </div>
         </div>
 
-        {/* Right side controls: Notification & ThemeSwitcher */}
+        {/* Right side controls */}
         <div className="flex items-center gap-2">
           {/* Notification icon button (shows peaceful status) */}
           <button
@@ -103,10 +66,6 @@ export function DashboardGreetingHeader({ className }: DashboardGreetingHeaderPr
           >
             <Bell size={18} strokeWidth={1.8} aria-hidden />
           </button>
-
-          <div className="inline-flex">
-            <ThemeSwitcher />
-          </div>
         </div>
       </div>
     </div>

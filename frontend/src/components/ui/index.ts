@@ -1,6 +1,7 @@
 export { Badge } from './Badge'
 export { Button } from './Button'
 export { Card } from './Card'
+export { CashflowCard } from './CashflowCard'
 export { Chip } from './Chip'
 export { ConfirmDialog } from './ConfirmDialog'
 export { EmptyState } from './EmptyState'

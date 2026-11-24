@@ -7,6 +7,7 @@ import {
   X,
 } from 'lucide-react'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { themes, useTheme, type AppearanceMode } from '@/lib/theme-context'
 import { cn } from '@/lib/cn'
 
@@ -94,7 +95,8 @@ export function ThemeSwitcher() {
     function handlePointerDown(event: PointerEvent) {
       if (
         event.target instanceof Node &&
-        !rootRef.current?.contains(event.target)
+        !rootRef.current?.contains(event.target) &&
+        !panelRef.current?.contains(event.target)
       ) {
         closePanel()
       }
@@ -160,7 +162,7 @@ export function ThemeSwitcher() {
         <span className="hidden sm:inline">Tampilan</span>
       </button>
 
-      {rendered && (
+      {rendered && createPortal(
         <>
           <button
             type="button"
@@ -180,7 +182,7 @@ export function ThemeSwitcher() {
             aria-labelledby={`${titleId}-label`}
             className={cn(
               'fixed inset-x-0 bottom-0 z-50 max-h-[90dvh] overflow-y-auto rounded-t-[1.5rem] border border-line bg-card p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-lg transition duration-[240ms] ease-[var(--ease-soft)]',
-              'lg:absolute lg:inset-x-auto lg:bottom-auto lg:right-0 lg:top-full lg:mt-2 lg:max-h-[min(85dvh,42rem)] lg:w-[22rem] lg:rounded-[var(--radius-card)] lg:p-5 lg:pb-5',
+              'lg:inset-x-auto lg:right-8 lg:bottom-auto lg:top-18 lg:max-h-[min(85dvh,42rem)] lg:w-[22rem] lg:rounded-[var(--radius-card)] lg:p-5 lg:pb-5',
               open
                 ? 'translate-y-0 opacity-100 lg:scale-100'
                 : 'translate-y-full opacity-0 lg:translate-y-2 lg:scale-95',
@@ -282,7 +284,8 @@ export function ThemeSwitcher() {
               </div>
             </fieldset>
           </div>
-        </>
+        </>,
+        document.body,
       )}
     </div>
   )
