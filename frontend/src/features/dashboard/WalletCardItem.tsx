@@ -36,54 +36,62 @@ export function WalletCardItem({
     <Link
       to={`/dompet?selected=${wallet.id}`}
       className={cn(
-        'group relative flex w-52 shrink-0 snap-start flex-col justify-between overflow-hidden rounded-[var(--radius-card)]',
-        'border border-line/80 bg-card p-4 text-left transition-all duration-200',
-        'hover:-translate-y-1 hover:border-brand-300 hover:shadow-md active:translate-y-0',
+        'group relative h-36 w-[16.5rem] shrink-0 snap-start overflow-visible text-left',
+        'transition-all duration-200 hover:-translate-y-1 active:translate-y-0',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2',
         className,
       )}
     >
-      {/* Visual styling: stitch-border line decoration at top */}
+      {/* Leather-like wallet shell */}
       <div
-        className="pointer-events-none absolute inset-x-2 top-1.5 h-0.5 border-t border-dashed border-line/70 dark:border-line/40"
-        aria-hidden="true"
-      />
-
-      {/* Wallet flap & clasp simulation on right side */}
-      <div
-        className="pointer-events-none absolute right-0 top-3 flex items-center pr-2"
+        className="absolute inset-0 overflow-hidden rounded-[1.35rem] border border-brand-800/35 bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 shadow-[0_10px_24px_color-mix(in_srgb,var(--brand-700)_24%,transparent)] transition-shadow duration-200 group-hover:shadow-[0_14px_28px_color-mix(in_srgb,var(--brand-700)_32%,transparent)] dark:border-white/10"
         aria-hidden="true"
       >
-        <div className="relative flex h-6 w-5 items-center justify-end rounded-l-md bg-muted/70 px-1 border-y border-l border-line/60 shadow-xs">
-          {/* Golden metallic snap button rivet */}
-          <div className="size-2 rounded-full bg-amber-400 dark:bg-amber-500 shadow-inner ring-1 ring-amber-600/40" />
+        <div className="absolute inset-1.5 rounded-[1.05rem] border border-dashed border-white/30" />
+        <div className="absolute -right-12 -top-14 size-28 rotate-12 rounded-full border border-white/10" />
+      </div>
+
+      {/* Oversized top flap gives the card the silhouette of a physical wallet */}
+      <div
+        className="pointer-events-none absolute left-1.5 right-1.5 top-1.5 h-[4.25rem] overflow-hidden rounded-t-[1.05rem] rounded-b-[0.85rem] border border-white/15 bg-gradient-to-r from-brand-400/70 via-brand-300/35 to-brand-700/20 shadow-[0_5px_10px_rgb(0_0_0/0.14)] [clip-path:polygon(0_0,100%_0,96%_100%,4%_100%)]"
+        aria-hidden="true"
+      >
+        <div className="absolute inset-x-2.5 bottom-2 border-b border-dashed border-white/35" />
+      </div>
+
+      {/* Raised clasp */}
+      <div
+        className="pointer-events-none absolute right-[1.15rem] top-[3.55rem] z-20 flex size-9 items-center justify-center rounded-full border border-amber-200/70 bg-amber-300 shadow-[0_3px_8px_rgb(0_0_0/0.24)] dark:border-amber-300/40 dark:bg-amber-400"
+        aria-hidden="true"
+      >
+        <div className="size-3 rounded-full border border-amber-700/50 bg-amber-200 shadow-inner dark:bg-amber-300">
+          <div className="mx-auto mt-[3px] h-px w-1.5 bg-amber-700/70" />
         </div>
       </div>
 
-      {/* Top row: Icon + Type tag */}
-      <div className="flex items-center justify-between gap-2 pr-6">
-        <span className="inline-flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-transform duration-200 group-hover:scale-105 dark:bg-brand-900/30 dark:text-brand-300 shadow-xs">
-          {WalletIcon({ size: 20, strokeWidth: 1.8, 'aria-hidden': true })}
-        </span>
-        <span className="rounded-full bg-muted/80 px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase text-ink-soft">
-          {typeLabel}
-        </span>
-      </div>
+      {/* Wallet pocket content */}
+      <div className="relative z-10 flex h-full flex-col px-4 py-3.5 text-white">
+        <div className="flex items-center gap-2.5 pr-10">
+          <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/25 bg-black/10 shadow-sm backdrop-blur-sm transition-transform duration-200 group-hover:scale-105">
+            <WalletIcon size={17} strokeWidth={1.8} aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold leading-tight drop-shadow-sm">
+              {wallet.name}
+            </p>
+            <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75">
+              {typeLabel}
+            </p>
+          </div>
+        </div>
 
-      {/* Bottom details */}
-      <div className="mt-4">
-        <p className="truncate text-xs font-semibold text-ink-soft group-hover:text-ink transition-colors">
-          {wallet.name}
-        </p>
-        <p className="mt-1 tabular-nums text-base font-bold text-ink tracking-tight">
-          {hidden ? 'Rp ••••••' : formatRupiah(wallet.balance)}
-        </p>
+        <div className="mt-auto border-t border-white/20 pt-2.5">
+          <p className="text-[10px] font-medium text-white/70">Saldo tersedia</p>
+          <p className="mt-0.5 truncate tabular-nums text-lg font-extrabold tracking-tight text-white drop-shadow-sm">
+            {hidden ? 'Rp ••••••' : formatRupiah(wallet.balance)}
+          </p>
+        </div>
       </div>
-
-      {/* Bottom subtle stitch line */}
-      <div
-        className="pointer-events-none absolute inset-x-2 bottom-1.5 h-0.5 border-b border-dashed border-line/70 dark:border-line/40"
-        aria-hidden="true"
-      />
     </Link>
   )
 }
