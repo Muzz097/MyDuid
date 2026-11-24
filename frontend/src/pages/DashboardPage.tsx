@@ -1,51 +1,27 @@
-import { useEffect, useState } from 'react'
-import {
-  ArrowRight,
-  Plus,
-  Receipt,
-  Wallet,
-} from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { ArrowRight, Plus, Receipt, Wallet } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import {
   Button,
   Card,
-  FinancialSummary,
-  MoneyText,
-  ProgressBar,
   SectionHeader,
   Skeleton,
   TransactionItem,
   useToast,
-  MyDuidLoader,
   SectionMotion,
 } from '@/components/ui'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
 import { useCountUp } from '@/hooks/useCountUp'
 import { ApiError, api } from '@/lib/api'
-import { getIcon } from '@/lib/icons'
-import { formatCompact, formatRupiah } from '@/lib/money'
 import { useStore } from '@/lib/store'
-import { monthSummary, totalBalance } from '@/lib/summary'
-import type { Category, Transaction } from '@/types'
-
-const PIE_COLORS = [
-  'var(--color-expense-500)',
-  'var(--color-expense-400)',
-  'var(--color-warn-500)',
-  'var(--color-brand-500)',
-  'var(--color-brand-400)',
-  'var(--color-info-500)',
-]
-
-type DashboardBudget = {
-  id: number
-  limit_amount: number
-  spent: number
-  percent: number
-  category: { name: string } | null
-  wallet: { name: string } | null
-}
+import type { DashboardData } from '@/types'
+import { DashboardGreetingHeader } from '@/features/dashboard/DashboardGreetingHeader'
+import { TotalAssetCard } from '@/features/dashboard/TotalAssetCard'
+import { MonthlySummaryCards } from '@/features/dashboard/MonthlySummaryCards'
+import { WalletCardItem } from '@/features/dashboard/WalletCardItem'
+import { CashFlowChart } from '@/features/dashboard/CashFlowChart'
+import { CategoryComposition } from '@/features/dashboard/CategoryComposition'
+import { BudgetProgressCard, type DashboardBudget } from '@/features/dashboard/BudgetProgressCard'
 
 function currentMonth(): string {
   return new Intl.DateTimeFormat('en-CA', {
@@ -55,158 +31,136 @@ function currentMonth(): string {
   }).format(new Date())
 }
 
-function expenseByCategory(
-  transactions: Transaction[],
-  categories: Category[],
-) {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = now.getMonth() + 1
-  const totals = new Map<number, number>()
-
-  for (const tx of transactions) {
-    if (tx.type !== 'expense') continue
-    const [y, m] = tx.date.split('-').map(Number)
-    if (y !== year || m !== month) continue
-    totals.set(tx.categoryId, (totals.get(tx.categoryId) ?? 0) + tx.amount)
-  }
-
-  return [...totals.entries()]
-    .map(([categoryId, amount]) => {
-      const category = categories.find((c) => c.id === categoryId)
-      return {
-        categoryId,
-        name: category?.name ?? 'Lainnya',
-        iconKey: category?.iconKey ?? 'default',
-        amount,
-      }
-    })
-    .sort((a, b) => b.amount - a.amount)
-}
-
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-6" aria-busy="true">
-      <div className="flex items-center justify-center p-8 bg-card rounded-[var(--radius-card)] border border-line shadow-xs">
-        <MyDuidLoader
-          variant="section"
-          size="lg"
-          message="Menyiapkan data keuangan Anda..."
-        />
-      </div>
-      <div className="space-y-3">
-        <Skeleton className="h-5 w-32" />
-        <div className="flex gap-3 overflow-hidden">
-          <Skeleton className="h-28 w-48 shrink-0" rounded="card" />
-          <Skeleton className="h-28 w-48 shrink-0" rounded="card" />
-          <Skeleton className="h-28 w-48 shrink-0" rounded="card" />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Skeleton className="h-64" rounded="card" />
-        <Skeleton className="h-64" rounded="card" />
-      </div>
-      <Skeleton className="h-64 w-full" rounded="card" />
-    </div>
-  )
-}
-
 export function DashboardPage() {
-  const { wallets, transactions, categories } = useStore()
-  const { show } = useToast()
   const { openAddTransaction } = useAddTransaction()
+  const { show } = useToast()
+  const { wallets: storeWallets } = useStore()
+
   const [balanceHidden, setBalanceHidden] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
+  const [dashLoading, setDashLoading] = useState(true)
+  const [_dashError, setDashError] = useState<string | null>(null)
+
   const [budgets, setBudgets] = useState<DashboardBudget[]>([])
-  const [now] = useState(() => new Date())
+  const [budgetsLoading, setBudgetsLoading] = useState(true)
 
-  const balance = totalBalance(wallets)
-  const animatedBalance = useCountUp(loading ? 0 : balance)
-  const { income, expense } = monthSummary(
-    transactions,
-    now.getFullYear(),
-    now.getMonth() + 1,
-  )
-  const categorySpend = expenseByCategory(transactions, categories)
-  const recent = [...transactions]
-    .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id)
-    .slice(0, 5)
-
-  const categoryById = new Map(categories.map((c) => [c.id, c]))
-  const walletById = new Map(wallets.map((w) => [w.id, w]))
-
-  useEffect(() => {
-    let active = true
-    api<{ data: DashboardBudget[] }>(`/budgets?month=${currentMonth()}`)
-      .then((response) => {
-        if (active) {
-          setBudgets(
-            [...response.data]
-              .sort((left, right) => right.percent - left.percent)
-              .slice(0, 3),
-          )
-        }
-      })
-      .catch((error: unknown) => {
-        if (active) {
-          show({
-            message:
-              error instanceof ApiError
-                ? error.message
-                : 'Progres anggaran gagal dimuat',
-            type: 'error',
-          })
-        }
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
-    return () => {
-      active = false
+  // Fetch dashboard data
+  const loadDashboard = useCallback(async () => {
+    try {
+      setDashLoading(true)
+      setDashError(null)
+      const res = await api<{ data: DashboardData }>(`/dashboard?month=${currentMonth()}`)
+      setDashboardData(res.data)
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : 'Gagal memuat data dashboard'
+      setDashError(msg)
+      show({ message: msg, type: 'error' })
+    } finally {
+      setDashLoading(false)
     }
   }, [show])
 
-  if (loading) {
-    return <DashboardSkeleton />
-  }
+  // Fetch budgets separately so slow budgets API does not block dashboard
+  const loadBudgets = useCallback(async () => {
+    try {
+      setBudgetsLoading(true)
+      const res = await api<{ data: DashboardBudget[] }>(`/budgets?month=${currentMonth()}`)
+      setBudgets(
+        [...res.data]
+          .sort((left, right) => right.percent - left.percent)
+          .slice(0, 3),
+      )
+    } catch {
+      // Budgets are progressive, error does not crash the whole page
+    } finally {
+      setBudgetsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadDashboard()
+    void loadBudgets()
+  }, [loadDashboard, loadBudgets])
+
+  // Count up animation for balance
+  const rawBalance = dashboardData?.total_balance ?? 0
+  const animatedBalance = useCountUp(dashLoading ? 0 : rawBalance)
+
+  // Data helpers
+  const wallets = dashboardData?.wallets ?? storeWallets
+  const income = dashboardData?.income ?? 0
+  const expense = dashboardData?.expense ?? 0
+  const dailyCashFlow = dashboardData?.daily_cash_flow ?? []
+  const incomeCategories = dashboardData?.income_by_category ?? []
+  const expenseCategories = dashboardData?.expense_by_category ?? []
+  const recentTransactions = dashboardData?.recent_transactions ?? []
 
   return (
-    <div className="space-y-6 pb-4">
-      {/* 1. Hero financial summary */}
-      <SectionMotion as="section" aria-label="Ringkasan Saldo dan Arus Kas" delay={0}>
-        <FinancialSummary
-          totalBalance={animatedBalance}
-          income={income}
-          expense={expense}
-          balanceHidden={balanceHidden}
-          onToggleHide={() => setBalanceHidden((v) => !v)}
-          className="shadow-[var(--shadow-card)]"
-        />
+    <div className="space-y-6 pb-6">
+      {/* 1. Personal Greeting / Header */}
+      <DashboardGreetingHeader />
+
+      {/* 2. Hero Total Aset Card */}
+      <SectionMotion as="section" aria-label="Total Aset" delay={0}>
+        {dashLoading && !dashboardData ? (
+          <Skeleton className="h-44 w-full" rounded="card" />
+        ) : (
+          <TotalAssetCard
+            totalBalance={animatedBalance}
+            balanceHidden={balanceHidden}
+            onToggleHide={() => setBalanceHidden((v) => !v)}
+            walletCount={wallets.length}
+          />
+        )}
       </SectionMotion>
 
-      {/* 2. Dompet Section */}
-      <SectionMotion as="section" aria-label="Daftar Dompet" delay={60}>
+      {/* 3. Monthly Summary Cards (Income, Expense, Net Cash Flow) */}
+      <SectionMotion as="section" aria-label="Ringkasan Bulanan" delay={40}>
+        {dashLoading && !dashboardData ? (
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+            <Skeleton className="h-28" rounded="card" />
+            <Skeleton className="h-28" rounded="card" />
+            <Skeleton className="h-28" rounded="card" />
+          </div>
+        ) : (
+          <MonthlySummaryCards
+            income={income}
+            expense={expense}
+            balanceHidden={balanceHidden}
+          />
+        )}
+      </SectionMotion>
+
+      {/* 4. Dompet Section */}
+      <SectionMotion as="section" aria-label="Daftar Dompet" delay={80}>
         <SectionHeader
           title="Dompet & Rekening"
           subtitle={`${wallets.length} sumber dana aktif`}
           action={
             <Link
               to="/dompet"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 transition hover:text-brand-700 hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 transition hover:text-brand-700 hover:underline dark:text-brand-400"
             >
               <span>Kelola</span>
               <ArrowRight size={13} aria-hidden />
             </Link>
           }
         />
-        {wallets.length === 0 ? (
+
+        {dashLoading && !dashboardData ? (
+          <div className="flex gap-3 overflow-hidden">
+            <Skeleton className="h-28 w-52 shrink-0" rounded="card" />
+            <Skeleton className="h-28 w-52 shrink-0" rounded="card" />
+            <Skeleton className="h-28 w-52 shrink-0" rounded="card" />
+          </div>
+        ) : wallets.length === 0 ? (
           <Card className="flex flex-col items-center justify-center py-8 text-center" variant="subtle">
             <span className="mb-2 inline-flex size-10 items-center justify-center rounded-xl bg-muted text-ink-soft">
               <Wallet size={20} strokeWidth={1.75} aria-hidden />
             </span>
-            <p className="text-sm font-medium text-ink">Belum ada dompet</p>
+            <p className="text-sm font-medium text-ink">Belum ada dompet aktif</p>
             <p className="mt-0.5 text-xs text-ink-soft">
-              Tambahkan kas, rekening bank, atau e-wallet Anda.
+              Tambahkan uang kas, rekening bank, atau e-wallet Anda.
             </p>
             <Link to="/dompet" className="mt-3">
               <Button size="sm" variant="outline">
@@ -215,206 +169,61 @@ export function DashboardPage() {
             </Link>
           </Card>
         ) : (
-          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1.5 pt-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {wallets.map((wallet) => {
-              const WalletIcon = getIcon(wallet.iconKey)
-              return (
-                <div
-                  key={wallet.id}
-                  className="group relative flex w-48 shrink-0 snap-start flex-col justify-between rounded-[var(--radius-card)] border border-line bg-card p-4 transition duration-150 hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="inline-flex size-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition duration-150 group-hover:scale-105 dark:bg-brand-900/30 dark:text-brand-300">
-                      <WalletIcon size={20} strokeWidth={1.75} aria-hidden />
-                    </span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-ink-soft capitalize">
-                      {wallet.type}
-                    </span>
-                  </div>
-                  <div className="mt-4">
-                    <p className="truncate text-xs font-medium text-ink-soft">
-                      {wallet.name}
-                    </p>
-                    <p className="mt-0.5 tabular-nums text-base font-bold text-ink tracking-tight">
-                      {balanceHidden ? 'Rp ••••••' : formatRupiah(wallet.balance)}
-                    </p>
-                  </div>
-                </div>
-              )
-            })}
+          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 pt-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {wallets.map((wallet) => (
+              <WalletCardItem
+                key={wallet.id}
+                wallet={wallet}
+                hidden={balanceHidden}
+              />
+            ))}
           </div>
         )}
       </SectionMotion>
 
-      {/* 3. Progres Anggaran & Pengeluaran Per Kategori (2 Columns on large) */}
-      <SectionMotion className="grid grid-cols-1 gap-6 lg:grid-cols-2" delay={120}>
+      {/* 5. Grafik Arus Kas (Daily / Weekly) */}
+      <SectionMotion as="section" aria-label="Grafik Arus Kas" delay={120}>
+        {dashLoading && !dashboardData ? (
+          <Skeleton className="h-72 w-full" rounded="card" />
+        ) : (
+          <CashFlowChart data={dailyCashFlow} />
+        )}
+      </SectionMotion>
+
+      {/* 6. Progres Anggaran & Komposisi Kategori (2 Columns on large) */}
+      <SectionMotion className="grid grid-cols-1 gap-6 lg:grid-cols-2" delay={160}>
         {/* Progres Anggaran */}
         <section aria-label="Progres Anggaran" className="flex flex-col">
-          <SectionHeader
-            title="Progres Anggaran"
-            subtitle="Pantauan batas bulan ini"
-            action={
-              <Link
-                to="/anggaran"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 transition hover:text-brand-700 hover:underline"
-              >
-                <span>Lihat Semua</span>
-                <ArrowRight size={13} aria-hidden />
-              </Link>
-            }
+          <BudgetProgressCard
+            budgets={budgets}
+            loading={budgetsLoading}
           />
-          <Card className="flex flex-1 flex-col justify-between">
-            {budgets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <p className="text-sm font-medium text-ink">Belum ada anggaran</p>
-                <p className="mt-1 max-w-xs text-xs text-ink-soft">
-                  Buat anggaran bulanan untuk mengendalikan pengeluaran Anda dengan lebih disiplin.
-                </p>
-                <Link to="/anggaran" className="mt-4">
-                  <Button size="sm" variant="outline" leftIcon={<Plus size={14} />}>
-                    Buat Anggaran
-                  </Button>
-                </Link>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-5">
-                {budgets.map((budget) => (
-                  <ProgressBar
-                    key={budget.id}
-                    value={budget.spent}
-                    max={budget.limit_amount}
-                    label={
-                      budget.category && budget.wallet
-                        ? `${budget.category.name} · ${budget.wallet.name}`
-                        : budget.category?.name ?? budget.wallet?.name ?? 'Anggaran'
-                    }
-                  />
-                ))}
-              </div>
-            )}
-          </Card>
         </section>
 
-        {/* Pengeluaran per Kategori */}
-        <section aria-label="Pengeluaran per Kategori" className="flex flex-col">
-          <SectionHeader
-            title="Pengeluaran Kategori"
-            subtitle="Distribusi pengeluaran bulan ini"
-          />
-          <Card className="flex flex-1 flex-col justify-between">
-            {categorySpend.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <p className="text-sm font-medium text-ink">Belum ada pengeluaran</p>
-                <p className="mt-1 max-w-xs text-xs text-ink-soft">
-                  Transaksi pengeluaran bulan ini akan dikelompokkan otomatis di sini.
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => openAddTransaction('expense')}
-                  leftIcon={<Plus size={14} />}
-                >
-                  Catat Pengeluaran
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="relative mx-auto h-44 w-full max-w-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Tooltip
-                        formatter={(val: unknown) => [
-                          formatRupiah(Number(val) || 0),
-                          'Nominal',
-                        ]}
-                        contentStyle={{
-                          backgroundColor: 'var(--color-card)',
-                          borderColor: 'var(--color-line)',
-                          borderRadius: 'var(--radius-control)',
-                          color: 'var(--color-ink)',
-                          fontSize: '12px',
-                        }}
-                      />
-                      <Pie
-                        data={categorySpend}
-                        dataKey="amount"
-                        nameKey="name"
-                        innerRadius={50}
-                        outerRadius={72}
-                        paddingAngle={3}
-                        stroke="none"
-                        isAnimationActive
-                        animationDuration={600}
-                      >
-                        {categorySpend.map((entry, index) => (
-                          <Cell
-                            key={entry.categoryId}
-                            fill={PIE_COLORS[index % PIE_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-[11px] font-medium uppercase tracking-wider text-ink-soft">
-                      Total
-                    </p>
-                    <p className="tabular-nums text-sm font-bold text-expense-500">
-                      {balanceHidden ? 'Rp ••••••' : formatCompact(expense)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="divide-y divide-line/60 border-t border-line/60 pt-2">
-                  {categorySpend.slice(0, 4).map((entry, index) => {
-                    const LegendIcon = getIcon(entry.iconKey)
-                    const percent = expense > 0 ? Math.round((entry.amount / expense) * 100) : 0
-                    return (
-                      <div
-                        key={entry.categoryId}
-                        className="flex items-center justify-between gap-3 py-2 text-xs"
-                      >
-                        <span className="inline-flex min-w-0 items-center gap-2 text-ink">
-                          <span
-                            className="size-2 shrink-0 rounded-full"
-                            style={{
-                              backgroundColor:
-                                PIE_COLORS[index % PIE_COLORS.length],
-                            }}
-                            aria-hidden
-                          />
-                          <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-expense-50 text-expense-500 dark:bg-expense-950/40 dark:text-expense-400">
-                            <LegendIcon size={14} strokeWidth={1.75} aria-hidden />
-                          </span>
-                          <span className="truncate font-medium">{entry.name}</span>
-                          <span className="text-[11px] text-ink-soft">({percent}%)</span>
-                        </span>
-                        <MoneyText
-                          amount={entry.amount}
-                          type="expense"
-                          className="tabular-nums text-xs font-semibold"
-                          hidden={balanceHidden}
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </Card>
+        {/* Komposisi Kategori (Income / Expense tabs) */}
+        <section aria-label="Komposisi Kategori" className="flex flex-col">
+          {dashLoading && !dashboardData ? (
+            <Skeleton className="h-72 w-full" rounded="card" />
+          ) : (
+            <CategoryComposition
+              incomeCategories={incomeCategories}
+              expenseCategories={expenseCategories}
+              balanceHidden={balanceHidden}
+              onAddTransaction={(type) => openAddTransaction(type)}
+            />
+          )}
         </section>
       </SectionMotion>
 
-      {/* 4. Transaksi Terakhir Section */}
-      <SectionMotion as="section" aria-label="Transaksi Terakhir" delay={180}>
+      {/* 7. Transaksi Terakhir Section */}
+      <SectionMotion as="section" aria-label="Transaksi Terakhir" delay={200}>
         <SectionHeader
           title="Transaksi Terakhir"
           subtitle="Catatan keuangan baru-baru ini"
           action={
             <Link
               to="/transaksi"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 transition hover:text-brand-700 hover:underline"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 transition hover:text-brand-700 hover:underline dark:text-brand-400"
             >
               <span>Semua Transaksi</span>
               <ArrowRight size={13} aria-hidden />
@@ -422,14 +231,20 @@ export function DashboardPage() {
           }
         />
         <Card className="!p-0 overflow-hidden">
-          {recent.length === 0 ? (
+          {dashLoading && !dashboardData ? (
+            <div className="space-y-3 p-5">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : recentTransactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 text-center">
               <span className="mb-2 inline-flex size-12 items-center justify-center rounded-full bg-muted text-ink-soft">
                 <Receipt size={24} strokeWidth={1.75} aria-hidden />
               </span>
-              <p className="text-sm font-medium text-ink">Belum ada transaksi</p>
+              <p className="text-sm font-medium text-ink">Belum ada transaksi di bulan ini</p>
               <p className="mt-1 max-w-sm text-xs text-ink-soft">
-                Mulai catat transaksi pertama Anda untuk melihat histori di sini.
+                Mulai catat pengeluaran atau pemasukan pertama Anda untuk melihat histori di sini.
               </p>
               <Button
                 size="sm"
@@ -443,15 +258,46 @@ export function DashboardPage() {
             </div>
           ) : (
             <div className="divide-y divide-line px-5">
-              {recent.map((tx) => (
-                <TransactionItem
-                  key={tx.id}
-                  transaction={tx}
-                  category={categoryById.get(tx.categoryId)}
-                  wallet={walletById.get(tx.walletId)}
-                  hidden={balanceHidden}
-                />
-              ))}
+              {recentTransactions.map((tx) => {
+                // Map to Transaction item format
+                const mappedTx = {
+                  id: tx.id,
+                  walletId: tx.wallet?.id ?? 0,
+                  categoryId: tx.category?.id ?? 0,
+                  type: tx.type,
+                  amount: tx.amount,
+                  date: tx.transaction_date,
+                  notes: tx.notes ?? undefined,
+                }
+                const categoryObj = tx.category
+                  ? {
+                      id: tx.category.id,
+                      name: tx.category.name,
+                      type: tx.type,
+                      iconKey: tx.category.icon_key ?? 'default',
+                    }
+                  : null
+
+                const walletObj = tx.wallet
+                  ? {
+                      id: tx.wallet.id,
+                      name: tx.wallet.name,
+                      type: 'cash' as const,
+                      iconKey: 'default',
+                      balance: 0,
+                    }
+                  : null
+
+                return (
+                  <TransactionItem
+                    key={tx.id}
+                    transaction={mappedTx}
+                    category={categoryObj}
+                    wallet={walletObj}
+                    hidden={balanceHidden}
+                  />
+                )
+              })}
             </div>
           )}
         </Card>

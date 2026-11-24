@@ -13,7 +13,8 @@ class DashboardService
     public function forMonth(User $user, string $month): array
     {
         $start = Carbon::createFromFormat('Y-m-d', $month.'-01', 'Asia/Jakarta')->startOfMonth();
-        $range = [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()];
+        $end = $start->copy()->endOfMonth();
+        $range = [$start->toDateString(), $end->toDateString()];
 
         $wallets = $user->wallets()->where('is_active', true)->orderBy('id')->get();
         $map = $this->balances->forWallets($wallets);
@@ -25,23 +26,29 @@ class DashboardService
                          COALESCE(SUM(CASE WHEN type='expense' THEN amount END),0) AS expense")
             ->first();
 
-        $byCategory = DB::table('transactions')
-            ->join('categories', function ($j) {
-                $j->on('categories.id', '=', 'transactions.category_id')
-                    ->on('categories.user_id', '=', 'transactions.user_id');
-            })
-            ->where('transactions.user_id', $user->id)
-            ->where('transactions.type', 'expense')
-            ->whereNull('transactions.deleted_at')
-            ->whereBetween('transactions.transaction_date', $range)
-            ->groupBy('categories.id', 'categories.name', 'categories.icon_key')
-            ->orderByDesc(DB::raw('SUM(transactions.amount)'))
-            ->selectRaw('categories.id, categories.name, categories.icon_key, SUM(transactions.amount) AS amount')
+        $daily = DB::table('transactions')
+            ->where('user_id', $user->id)->whereNull('deleted_at')
+            ->whereBetween('transaction_date', $range)
+            ->groupBy('transaction_date')
+            ->selectRaw("transaction_date,
+                         COALESCE(SUM(CASE WHEN type='income' THEN amount END),0) AS income,
+                         COALESCE(SUM(CASE WHEN type='expense' THEN amount END),0) AS expense")
             ->get()
-            ->map(fn ($r) => [
-                'category_id' => (int) $r->id, 'name' => $r->name,
-                'icon_key' => $r->icon_key, 'amount' => (int) $r->amount,
-            ])->all();
+            ->keyBy(fn ($row) => Carbon::parse($row->transaction_date, 'Asia/Jakarta')->toDateString());
+
+        // Zero-fill every day of the requested month so charts and weekly grouping
+        // can render continuous data without the frontend inventing missing dates.
+        $dailyCashFlow = [];
+        for ($day = $start->copy(); $day->lte($end); $day->addDay()) {
+            $date = $day->toDateString();
+            $row = $daily->get($date);
+
+            $dailyCashFlow[] = [
+                'date' => $date,
+                'income' => (int) ($row->income ?? 0),
+                'expense' => (int) ($row->expense ?? 0),
+            ];
+        }
 
         $recent = $user->transactions()
             ->with(['wallet:id,name', 'category:id,name,icon_key'])
@@ -63,8 +70,38 @@ class DashboardService
                 'id' => $w->id, 'name' => $w->name, 'type' => $w->type,
                 'icon_key' => $w->icon_key, 'balance' => $map[$w->id],
             ])->all(),
-            'expense_by_category' => $byCategory,
+            'daily_cash_flow' => $dailyCashFlow,
+            'income_by_category' => $this->byCategory($user, 'income', $range),
+            'expense_by_category' => $this->byCategory($user, 'expense', $range),
             'recent_transactions' => $recent,
         ];
+    }
+
+    /**
+     * Aggregate active transactions of one type per category for the given range.
+     *
+     * @param  array{0: string, 1: string}  $range
+     * @return array<int, array{category_id: int, name: string, icon_key: string|null, amount: int}>
+     */
+    private function byCategory(User $user, string $type, array $range): array
+    {
+        return DB::table('transactions')
+            ->join('categories', function ($j) {
+                $j->on('categories.id', '=', 'transactions.category_id')
+                    ->on('categories.user_id', '=', 'transactions.user_id');
+            })
+            ->where('transactions.user_id', $user->id)
+            ->where('transactions.type', $type)
+            ->whereNull('transactions.deleted_at')
+            ->whereBetween('transactions.transaction_date', $range)
+            ->groupBy('categories.id', 'categories.name', 'categories.icon_key')
+            ->orderByDesc(DB::raw('SUM(transactions.amount)'))
+            ->orderBy('categories.id')
+            ->selectRaw('categories.id, categories.name, categories.icon_key, SUM(transactions.amount) AS amount')
+            ->get()
+            ->map(fn ($r) => [
+                'category_id' => (int) $r->id, 'name' => $r->name,
+                'icon_key' => $r->icon_key, 'amount' => (int) $r->amount,
+            ])->all();
     }
 }

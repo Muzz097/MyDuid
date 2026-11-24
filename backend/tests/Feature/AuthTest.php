@@ -8,7 +8,7 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     RateLimiter::clear('login');
-    $this->withHeaders(['Origin' => 'http://localhost:5173', 'Accept' => 'application/json']);
+    $this->withHeaders(['Origin' => 'http://localhost:5174', 'Accept' => 'application/json']);
 });
 
 it('register membuat user dan 6 kategori bawaan', function () {
