@@ -17,7 +17,7 @@ import { WalletFormSheet } from '@/features/wallets/WalletFormSheet'
 import { ApiError, api } from '@/lib/api'
 import { formatRupiah } from '@/lib/money'
 import { useStore } from '@/lib/store'
-import type { Wallet, WalletCardTheme, WalletGroup, WalletIconType } from '@/types'
+import type { Wallet, WalletCardTheme, WalletGoal, WalletGroup, WalletIconType } from '@/types'
 
 type WalletRecord = Wallet & {
   isActive: boolean
@@ -34,6 +34,7 @@ type ApiWallet = {
   has_card_image?: boolean
   balance: number
   is_active: boolean
+  goal?: WalletGoal | null
 }
 
 type WalletAction = 'archive' | 'delete'
@@ -50,6 +51,7 @@ function mapWallet(wallet: ApiWallet): WalletRecord {
     hasCardImage: wallet.has_card_image ?? false,
     balance: wallet.balance,
     isActive: wallet.is_active,
+    goal: wallet.goal ?? null,
   }
 }
 

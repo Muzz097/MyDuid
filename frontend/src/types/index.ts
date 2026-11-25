@@ -12,6 +12,28 @@ export type WalletCardTheme =
 
 export type WalletIconType = 'preset' | 'emoji'
 
+export interface WalletGoalDeadlineInfo {
+  deadline: string
+  days_left: number | null
+  status: 'Dalam tenggat' | 'Tenggat terlewat' | 'Tercapai'
+  weekly_deposit: number | null
+  deposit_note: string | null
+}
+
+export interface WalletGoal {
+  id: number
+  wallet_id: number
+  name: string
+  target_amount: number
+  deadline: string | null
+  completed_at: string | null
+  balance: number
+  percent: number
+  remaining: number
+  achieved: boolean
+  deadline_info: WalletGoalDeadlineInfo | null
+}
+
 export interface Wallet {
   id: number
   name: string
@@ -23,6 +45,7 @@ export interface Wallet {
   hasCardImage: boolean
   balance: number          // Rupiah utuh
   isActive?: boolean
+  goal?: WalletGoal | null
 }
 
 export interface Category {

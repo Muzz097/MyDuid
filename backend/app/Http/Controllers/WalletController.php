@@ -10,6 +10,7 @@ use App\Models\Transaction;
 use App\Models\Transfer;
 use App\Models\Wallet;
 use App\Services\BalanceService;
+use App\Services\GoalProgressService;
 use App\Services\WalletCardImageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +19,11 @@ use Illuminate\Support\Facades\Validator;
 
 class WalletController extends Controller
 {
-    public function __construct(private BalanceService $balances, private WalletCardImageService $cardImages) {}
+    public function __construct(
+        private BalanceService $balances,
+        private WalletCardImageService $cardImages,
+        private GoalProgressService $goalProgress,
+    ) {}
 
     private function find(Request $request, int|string $id): Wallet
     {
@@ -27,15 +32,28 @@ class WalletController extends Controller
 
     private function present(Wallet $wallet): WalletResource
     {
-        WalletResource::$balances = $this->balances->forWallets(collect([$wallet]));
+        $wallet->loadMissing('goal');
+        $balances = $this->balances->forWallets(collect([$wallet]));
+        WalletResource::$balances = $balances;
+
+        if ($wallet->goal !== null) {
+            $this->goalProgress->attach($wallet->goal, $balances[$wallet->id] ?? (int) $wallet->opening_balance);
+        }
 
         return new WalletResource($wallet);
     }
 
     public function index(Request $request)
     {
-        $wallets = $request->user()->wallets()->orderBy('id')->get();
-        WalletResource::$balances = $this->balances->forWallets($wallets);
+        $wallets = $request->user()->wallets()->with('goal')->orderBy('id')->get();
+        $balances = $this->balances->forWallets($wallets);
+        WalletResource::$balances = $balances;
+
+        foreach ($wallets as $wallet) {
+            if ($wallet->goal !== null) {
+                $this->goalProgress->attach($wallet->goal, $balances[$wallet->id] ?? (int) $wallet->opening_balance);
+            }
+        }
 
         return WalletResource::collection($wallets);
     }

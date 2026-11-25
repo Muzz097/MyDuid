@@ -24,6 +24,7 @@ class WalletResource extends JsonResource
             'is_active' => $this->is_active,
             'opening_balance' => $this->opening_balance,
             'balance' => self::$balances[$this->id] ?? $this->opening_balance,
+            'goal' => $this->whenLoaded('goal', fn () => $this->goal ? new WalletGoalResource($this->goal) : null),
         ];
     }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['name', 'type', 'group', 'card_theme', 'card_image_path', 'opening_balance', 'icon_type', 'icon_key', 'icon_path', 'is_active'])]
 class Wallet extends Model
@@ -42,5 +43,13 @@ class Wallet extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Goal tabungan dompet ini (satu per dompet).
+     */
+    public function goal(): HasOne
+    {
+        return $this->hasOne(WalletGoal::class);
     }
 }

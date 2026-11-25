@@ -70,4 +70,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Budget::class);
     }
+
+    /**
+     * Goal tabungan milik pengguna.
+     */
+    public function walletGoals(): HasMany
+    {
+        return $this->hasMany(WalletGoal::class);
+    }
 }

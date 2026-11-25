@@ -10,6 +10,7 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\WalletCardImageController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\WalletGoalController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn (Request $r) => new UserResource($r->user()));
     Route::patch('/wallets/{wallet}/archive', [WalletController::class, 'archive']);
     Route::get('/wallets/{wallet}/activity', [WalletController::class, 'activity']);
+    Route::get('/wallets/{wallet}/goal', [WalletGoalController::class, 'show']);
+    Route::post('/wallets/{wallet}/goal', [WalletGoalController::class, 'store']);
+    Route::put('/wallets/{wallet}/goal', [WalletGoalController::class, 'update']);
+    Route::delete('/wallets/{wallet}/goal', [WalletGoalController::class, 'destroy']);
     Route::post('/wallets/{wallet}/card-image', [WalletCardImageController::class, 'store']);
     Route::get('/wallets/{wallet}/card-image', [WalletCardImageController::class, 'show']);
     Route::delete('/wallets/{wallet}/card-image', [WalletCardImageController::class, 'destroy']);

@@ -13,6 +13,7 @@ import { WalletIcon } from '@/components/ui/WalletIcon'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
 import { TransferSheet } from '@/features/wallets/TransferSheet'
 import { useWalletDetail } from '@/features/wallets/useWalletDetail'
+import { WalletGoalSection } from '@/features/wallets/WalletGoalSection'
 import {
   isValidSingleEmoji,
   WALLET_CARD_THEMES,
@@ -772,11 +773,15 @@ export function WalletDetailPanel() {
                 </div>
               </section>
             ) : (
-              <section
-                key="history-view"
-                aria-label="Riwayat dompet"
-                className="animate-fade-in space-y-3 motion-reduce:animate-none"
-              >
+              <>
+                {wallet.group === 'savings' ? (
+                  <WalletGoalSection wallet={wallet} onChanged={refresh} />
+                ) : null}
+                <section
+                  key="history-view"
+                  aria-label="Riwayat dompet"
+                  className="animate-fade-in space-y-3 motion-reduce:animate-none"
+                >
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="text-sm font-semibold text-ink">Riwayat</h3>
                 </div>
@@ -911,6 +916,7 @@ export function WalletDetailPanel() {
                   </div>
                 )}
               </section>
+              </>
             )}
           </div>
         )}

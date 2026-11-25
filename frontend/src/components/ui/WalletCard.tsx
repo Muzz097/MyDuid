@@ -3,7 +3,7 @@ import { WalletIcon } from '@/components/ui/WalletIcon'
 import { useWalletCardImage } from '@/hooks/useWalletCardImage'
 import { cn } from '@/lib/cn'
 import { formatRupiah } from '@/lib/money'
-import type { Wallet, WalletCardTheme, WalletGroup, WalletIconType } from '@/types'
+import type { Wallet, WalletCardTheme, WalletGoal, WalletGroup, WalletIconType } from '@/types'
 
 export type WalletCardSize = 'compact' | 'full'
 
@@ -24,6 +24,7 @@ export type WalletCardWallet =
       hasCardImage?: boolean
       balance: number
       isActive?: boolean
+      goal?: WalletGoal | null
     }
 
 export interface WalletCardProps {
@@ -113,6 +114,7 @@ export function WalletCard({
   const isArchived = wallet.isActive === false
   const hasAction = action != null
   const hasCardImage = resolveHasCardImage(wallet)
+  const goal = walletGroup === 'savings' && 'goal' in wallet ? wallet.goal : null
 
   const { src: fetchedSrc, error: fetchError } = useWalletCardImage(
     wallet.id,
@@ -216,11 +218,33 @@ export function WalletCard({
             </div>
           </div>
 
-          <div className="mt-auto border-t border-white/20 pt-2.5">
-            <p className="text-[10px] font-medium text-white/70">Saldo tersedia</p>
+          <div className="mt-auto border-t border-white/20 pt-2">
+            <div className="flex items-baseline justify-between gap-2">
+              <p className="text-[10px] font-medium text-white/70">Saldo tersedia</p>
+              {goal ? (
+                <span className="truncate text-[10px] font-semibold tabular-nums text-white/90">
+                  {goal.name} · {goal.percent}%
+                </span>
+              ) : null}
+            </div>
             <p className="mt-0.5 truncate tabular-nums text-lg font-extrabold tracking-tight text-white drop-shadow-sm">
               {hidden ? 'Rp ••••••' : formatRupiah(wallet.balance)}
             </p>
+            {goal ? (
+              <div
+                className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/20"
+                role="progressbar"
+                aria-valuenow={goal.percent}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={`Progres goal ${goal.name}: ${goal.percent}%`}
+              >
+                <div
+                  className="h-full rounded-full bg-white transition-[width] duration-300 motion-reduce:transition-none"
+                  style={{ width: `${Math.min(Math.max(goal.percent, 0), 100)}%` }}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </button>
