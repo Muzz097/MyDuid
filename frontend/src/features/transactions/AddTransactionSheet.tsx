@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { Input } from '@/components/ui/Input'
@@ -16,6 +16,9 @@ type AddTransactionSheetProps = {
   onClose: () => void
   initialType?: TransactionType
   initialDate?: string
+  initialWalletId?: number
+  lockWallet?: boolean
+  onSaved?: () => void
 }
 
 const LAST_CATEGORY_KEY = 'myduid:lastCategoryId'
@@ -61,6 +64,9 @@ export function AddTransactionSheet({
   onClose,
   initialType = 'expense',
   initialDate,
+  initialWalletId,
+  lockWallet = false,
+  onSaved,
 }: AddTransactionSheetProps) {
   const { wallets, categories, addTransaction, removeTransaction } = useStore()
   const { show } = useToast()
@@ -88,24 +94,33 @@ export function AddTransactionSheet({
     return [last, ...filtered.filter((c) => c.id !== lastId)]
   }, [categories, type])
 
+  const wasOpenRef = useRef(false)
+
   useEffect(() => {
-    if (!open) return
+    const justOpened = open && !wasOpenRef.current
+    wasOpenRef.current = open
+    if (!justOpened) return
+
     setType(initialType)
     setDigits('')
     setDate(initialDate ?? todayJakarta())
     setNotes('')
 
-    const lastWallet = readStoredId(LAST_WALLET_KEY)
-    const wallet =
-      activeWallets.find((w) => w.id === lastWallet) ?? activeWallets[0] ?? null
-    setWalletId(wallet?.id ?? null)
+    if (initialWalletId != null) {
+      setWalletId(initialWalletId)
+    } else {
+      const lastWallet = readStoredId(LAST_WALLET_KEY)
+      const wallet =
+        activeWallets.find((w) => w.id === lastWallet) ?? activeWallets[0] ?? null
+      setWalletId(wallet?.id ?? null)
+    }
 
     const lastCategory = readStoredId(LAST_CATEGORY_KEY)
     const availableCats = categories.filter((c) => c.type === initialType)
     const category =
       availableCats.find((c) => c.id === lastCategory) ?? availableCats[0] ?? null
     setCategoryId(category?.id ?? null)
-  }, [open, initialType, activeWallets, categories])
+  }, [open, initialType, initialDate, initialWalletId, activeWallets, categories])
 
   useEffect(() => {
     const available = categories.filter((c) => c.type === type)
@@ -151,6 +166,7 @@ export function AddTransactionSheet({
       writeStoredId(LAST_CATEGORY_KEY, categoryId)
       writeStoredId(LAST_WALLET_KEY, walletId)
       onClose()
+      onSaved?.()
 
       const detailText = `${selectedCategory?.name ?? (type === 'income' ? 'Pemasukan' : 'Pengeluaran')} • ${formatRupiah(amount)}${selectedWallet ? ` (${selectedWallet.name})` : ''}`
 
@@ -273,25 +289,27 @@ export function AddTransactionSheet({
           </div>
         </div>
 
-        <div>
-          <p className="mb-2 text-sm font-medium text-ink">Dompet</p>
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {activeWallets.map((wallet) => {
-              const Icon = getIcon(wallet.iconKey)
-              return (
-                <Chip
-                  key={wallet.id}
-                  selected={wallet.id === walletId}
-                  onClick={() => setWalletId(wallet.id)}
-                  icon={<Icon size={16} strokeWidth={1.75} aria-hidden />}
-                  className="shrink-0"
-                >
-                  {wallet.name}
-                </Chip>
-              )
-            })}
+        {!lockWallet && (
+          <div>
+            <p className="mb-2 text-sm font-medium text-ink">Dompet</p>
+            <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {activeWallets.map((wallet) => {
+                const Icon = getIcon(wallet.iconKey)
+                return (
+                  <Chip
+                    key={wallet.id}
+                    selected={wallet.id === walletId}
+                    onClick={() => setWalletId(wallet.id)}
+                    icon={<Icon size={16} strokeWidth={1.75} aria-hidden />}
+                    className="shrink-0"
+                  >
+                    {wallet.name}
+                  </Chip>
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Input

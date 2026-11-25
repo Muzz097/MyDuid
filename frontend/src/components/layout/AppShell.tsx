@@ -11,7 +11,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { PageTransition } from '@/components/ui/Motion'
 import { ThemeSwitcher } from '@/components/layout/ThemeSwitcher'
@@ -19,6 +19,8 @@ import {
   AddTransactionProvider,
   useAddTransaction,
 } from '@/features/transactions/AddTransactionContext'
+import { WalletDetailPanel } from '@/features/wallets/WalletDetailPanel'
+import { WalletDetailProvider } from '@/features/wallets/WalletDetailContext'
 import { QuickActionSheet } from '@/features/transactions/QuickActionSheet'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/cn'
@@ -391,7 +393,10 @@ function AppShellInner() {
 export function AppShell() {
   return (
     <AddTransactionProvider>
-      <AppShellInner />
+      <WalletDetailProvider>
+        <WalletDetailPanel />
+        <AppShellInner />
+      </WalletDetailProvider>
     </AddTransactionProvider>
   )
 }

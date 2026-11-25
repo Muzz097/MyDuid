@@ -8,15 +8,22 @@ import {
 import { X } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
+export type SheetVariant = 'sheet' | 'drawer'
+
 type SheetProps = {
   open: boolean
   onClose: () => void
   title?: string
   children: ReactNode
   className?: string
+  variant?: SheetVariant
 }
 
 const EXIT_MS = 250
+const sheetStack: number[] = []
+let nextSheetId = 1
+let scrollLockCount = 0
+let lockedBodyOverflow = ''
 
 export function Sheet({
   open,
@@ -24,64 +31,93 @@ export function Sheet({
   title,
   children,
   className,
+  variant = 'sheet',
 }: SheetProps) {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
+  const onCloseRef = useRef(onClose)
   const [rendered, setRendered] = useState(open)
   const [visible, setVisible] = useState(open)
+  const isDrawer = variant === 'drawer'
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (open) {
-      setRendered(true)
-      const frame = requestAnimationFrame(() => setVisible(true))
+      const frame = requestAnimationFrame(() => {
+        setRendered(true)
+        setVisible(true)
+      })
       return () => cancelAnimationFrame(frame)
     }
-    setVisible(false)
     const reduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const frame = requestAnimationFrame(() => setVisible(false))
     const timeout = window.setTimeout(
       () => setRendered(false),
       reduced ? 0 : EXIT_MS,
     )
-    return () => window.clearTimeout(timeout)
+    return () => {
+      cancelAnimationFrame(frame)
+      window.clearTimeout(timeout)
+    }
   }, [open])
 
   useEffect(() => {
     if (!rendered) return
 
     previouslyFocused.current = document.activeElement as HTMLElement | null
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    const id = nextSheetId
+    nextSheetId += 1
+    sheetStack.push(id)
 
-    const panel = panelRef.current
-    panel?.focus()
+    if (scrollLockCount === 0) {
+      lockedBodyOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+    }
+    scrollLockCount += 1
+
+    panelRef.current?.focus()
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        onClose()
-      }
+      if (event.key !== 'Escape') return
+      if (sheetStack[sheetStack.length - 1] !== id) return
+      event.preventDefault()
+      onCloseRef.current()
     }
 
     document.addEventListener('keydown', onKeyDown)
     return () => {
-      document.body.style.overflow = previousOverflow
+      const wasTop = sheetStack[sheetStack.length - 1] === id
+      const index = sheetStack.indexOf(id)
+      if (index >= 0) sheetStack.splice(index, 1)
+      scrollLockCount = Math.max(0, scrollLockCount - 1)
+      if (scrollLockCount === 0) {
+        document.body.style.overflow = lockedBodyOverflow
+      }
       document.removeEventListener('keydown', onKeyDown)
-      previouslyFocused.current?.focus?.()
+      if (wasTop) previouslyFocused.current?.focus?.()
     }
-  }, [rendered, onClose])
+  }, [rendered])
 
   if (!rendered) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center lg:items-center lg:p-6">
+    <div
+      className={cn(
+        'fixed inset-0 z-50 flex items-end justify-center',
+        isDrawer ? 'lg:items-stretch lg:justify-end' : 'lg:items-center lg:p-6',
+      )}
+    >
       <button
         type="button"
         aria-label="Tutup"
         className={cn(
-          'absolute inset-0 bg-ink/40 transition-opacity duration-[250ms] ease-[var(--ease-soft)]',
+          'absolute inset-0 bg-ink/40 transition-opacity duration-[250ms] ease-[var(--ease-soft)] motion-reduce:transition-none',
           visible ? 'opacity-100' : 'opacity-0',
         )}
         onClick={onClose}
@@ -94,11 +130,18 @@ export function Sheet({
         aria-labelledby={title ? titleId : undefined}
         tabIndex={-1}
         className={cn(
-          'relative z-10 flex max-h-[92dvh] w-full flex-col bg-card shadow-lg outline-none transition duration-[250ms] ease-[var(--ease-soft)]',
-          'rounded-t-[1.5rem] lg:max-h-[85dvh] lg:max-w-lg lg:rounded-[var(--radius-card)]',
-          visible
-            ? 'translate-y-0 opacity-100 lg:scale-100'
-            : 'translate-y-full opacity-0 lg:translate-y-4 lg:scale-95',
+          'relative z-10 flex max-h-[92dvh] w-full flex-col bg-card shadow-lg outline-none',
+          'transition duration-[250ms] ease-[var(--ease-soft)] motion-reduce:transition-none',
+          isDrawer
+            ? 'rounded-t-[1.5rem] lg:h-full lg:max-h-none lg:w-[30rem] lg:max-w-[32rem] lg:rounded-none lg:rounded-l-[var(--radius-card)]'
+            : 'rounded-t-[1.5rem] lg:max-h-[85dvh] lg:max-w-lg lg:rounded-[var(--radius-card)]',
+          isDrawer
+            ? visible
+              ? 'translate-y-0 opacity-100 lg:translate-x-0'
+              : 'translate-y-full opacity-0 lg:translate-y-0 lg:translate-x-full'
+            : visible
+              ? 'translate-y-0 opacity-100 lg:scale-100'
+              : 'translate-y-full opacity-0 lg:translate-y-4 lg:scale-95',
           className,
         )}
       >

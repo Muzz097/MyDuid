@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { MoreVertical, Plus, Wallet as WalletIcon } from 'lucide-react'
+import { MoreVertical, Plus } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { MyDuidLoader } from '@/components/ui/MyDuidLoader'
@@ -11,6 +11,8 @@ import {
   SectionMotion,
 } from '@/components/ui/Motion'
 import { WalletCard } from '@/components/ui/WalletCard'
+import { AddWalletCard } from '@/features/wallets/AddWalletCard'
+import { useWalletDetail } from '@/features/wallets/useWalletDetail'
 import { WalletFormSheet } from '@/features/wallets/WalletFormSheet'
 import { ApiError, api } from '@/lib/api'
 import { useStore } from '@/lib/store'
@@ -64,6 +66,8 @@ function WalletSkeleton() {
 export function WalletsPage() {
   const { refresh } = useStore()
   const { show } = useToast()
+  const { openWallet } = useWalletDetail()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [wallets, setWallets] = useState<WalletRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -94,6 +98,20 @@ export function WalletsPage() {
   useEffect(() => {
     void loadWallets().catch(() => undefined)
   }, [loadWallets])
+
+  useEffect(() => {
+    if (searchParams.get('tambah') !== '1') return
+    setEditing(null)
+    setFormOpen(true)
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('tambah')
+        return next
+      },
+      { replace: true },
+    )
+  }, [searchParams, setSearchParams])
 
   async function reloadAfterMutation() {
     await loadWallets()
@@ -149,12 +167,6 @@ export function WalletsPage() {
       <PageHeaderMotion
         title="Dompet"
         subtitle="Kelola sumber saldo yang kamu gunakan."
-        action={
-          <Button onClick={openCreateForm}>
-            <Plus size={18} strokeWidth={1.75} className="mr-2" aria-hidden />
-            Tambah dompet
-          </Button>
-        }
       />
 
       {loading ? (
@@ -166,13 +178,6 @@ export function WalletsPage() {
             Coba lagi
           </Button>
         </div>
-      ) : wallets.length === 0 ? (
-        <EmptyState
-          icon={WalletIcon}
-          title="Belum ada dompet"
-          description="Tambahkan dompet untuk mulai mencatat saldo dan transaksi."
-          action={{ label: 'Tambah dompet', onClick: openCreateForm }}
-        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {wallets.map((wallet, idx) => (
@@ -180,9 +185,9 @@ export function WalletsPage() {
               <WalletCard
                 wallet={wallet}
                 size="full"
-                onClick={() => {}}
+                onClick={() => openWallet(wallet.id)}
                 action={
-                  <div className="relative">
+                  <div className="relative" onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
                       aria-label={`Aksi untuk ${wallet.name}`}
@@ -233,6 +238,9 @@ export function WalletsPage() {
               />
             </SectionMotion>
           ))}
+          <SectionMotion delay={wallets.length * 40}>
+            <AddWalletCard size="full" onClick={openCreateForm} />
+          </SectionMotion>
         </div>
       )}
 

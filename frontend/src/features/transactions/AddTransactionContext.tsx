@@ -3,15 +3,24 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
 import { AddTransactionSheet } from '@/features/transactions/AddTransactionSheet'
 import type { TransactionType } from '@/types'
 
+type OpenAddTransactionOptions = {
+  type?: TransactionType
+  date?: string
+  walletId?: number
+  lockWallet?: boolean
+  onSaved?: () => void
+}
+
 type OpenAddTransactionParam =
   | TransactionType
-  | { type?: TransactionType; date?: string }
+  | OpenAddTransactionOptions
   | unknown
 
 type AddTransactionContextValue = {
@@ -25,22 +34,42 @@ export function AddTransactionProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [initialType, setInitialType] = useState<TransactionType>('expense')
   const [initialDate, setInitialDate] = useState<string | undefined>(undefined)
+  const [initialWalletId, setInitialWalletId] = useState<number | undefined>(undefined)
+  const [lockWallet, setLockWallet] = useState(false)
+  const onSavedRef = useRef<(() => void) | undefined>(undefined)
 
   const openAddTransaction = useCallback((param?: OpenAddTransactionParam) => {
     if (typeof param === 'string' && (param === 'income' || param === 'expense')) {
       setInitialType(param)
       setInitialDate(undefined)
-    } else if (param && typeof param === 'object' && ('type' in param || 'date' in param)) {
-      const obj = param as { type?: TransactionType; date?: string }
+      setInitialWalletId(undefined)
+      setLockWallet(false)
+      onSavedRef.current = undefined
+    } else if (
+      param &&
+      typeof param === 'object' &&
+      ('type' in param ||
+        'date' in param ||
+        'walletId' in param ||
+        'lockWallet' in param ||
+        'onSaved' in param)
+    ) {
+      const obj = param as OpenAddTransactionOptions
       if (obj.type === 'income' || obj.type === 'expense') {
         setInitialType(obj.type)
       } else {
         setInitialType('expense')
       }
       setInitialDate(obj.date)
+      setInitialWalletId(obj.walletId)
+      setLockWallet(Boolean(obj.lockWallet))
+      onSavedRef.current = obj.onSaved
     } else {
       setInitialType('expense')
       setInitialDate(undefined)
+      setInitialWalletId(undefined)
+      setLockWallet(false)
+      onSavedRef.current = undefined
     }
     setOpen(true)
   }, [])
@@ -57,6 +86,9 @@ export function AddTransactionProvider({ children }: { children: ReactNode }) {
         open={open}
         initialType={initialType}
         initialDate={initialDate}
+        initialWalletId={initialWalletId}
+        lockWallet={lockWallet}
+        onSaved={() => onSavedRef.current?.()}
         onClose={() => setOpen(false)}
       />
     </AddTransactionContext.Provider>

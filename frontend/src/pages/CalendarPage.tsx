@@ -3,7 +3,6 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  Filter,
   Plus,
   Receipt,
   RotateCcw,
@@ -437,27 +436,21 @@ export function CalendarPage() {
   return (
     <div className="space-y-6 pb-8">
       {/* 1. Page Header & Month Selector */}
-      <PageHeaderMotion>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex size-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:bg-brand-500/20 dark:text-brand-400">
-                <CalendarIcon size={20} strokeWidth={2} aria-hidden />
-              </span>
-              <h1 className="text-xl font-bold tracking-tight text-ink sm:text-2xl">
-                Kalender Keuangan
-              </h1>
-            </div>
-            <p className="mt-1 text-xs text-ink-soft sm:text-sm">
-              Pantau arus uang masuk dan keluar setiap hari secara visual.
-            </p>
-          </div>
-
-          {/* Month Navigation Controls */}
+      <PageHeaderMotion
+        title={
+          <span className="inline-flex items-center gap-2">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-brand-500/10 text-brand-600 dark:bg-brand-500/20 dark:text-brand-400">
+              <CalendarIcon size={20} strokeWidth={2} aria-hidden />
+            </span>
+            Kalender Keuangan
+          </span>
+        }
+        subtitle="Pantau arus uang masuk dan keluar setiap hari secara visual."
+        action={
           <div className="flex items-center gap-2 self-start rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-2xs sm:self-auto">
             <IconButton
               icon={<ChevronLeft size={18} />}
-              ariaLabel="Bulan sebelumnya"
+              label="Bulan sebelumnya"
               onClick={handlePrevMonth}
               variant="ghost"
               size="sm"
@@ -467,7 +460,7 @@ export function CalendarPage() {
             </span>
             <IconButton
               icon={<ChevronRight size={18} />}
-              ariaLabel="Bulan berikutnya"
+              label="Bulan berikutnya"
               onClick={handleNextMonth}
               variant="ghost"
               size="sm"
@@ -484,8 +477,8 @@ export function CalendarPage() {
               </Button>
             )}
           </div>
-        </div>
-      </PageHeaderMotion>
+        }
+      />
 
       {/* 2. Monthly Summary Cards */}
       <SectionMotion delay={20}>

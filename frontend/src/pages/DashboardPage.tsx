@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ArrowRight, Plus, Receipt, Wallet } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Button,
   Card,
@@ -12,6 +12,8 @@ import {
   WalletCard,
 } from '@/components/ui'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
+import { AddWalletCard } from '@/features/wallets/AddWalletCard'
+import { useWalletDetail } from '@/features/wallets/useWalletDetail'
 import { useCountUp } from '@/hooks/useCountUp'
 import { ApiError, api } from '@/lib/api'
 import { useStore } from '@/lib/store'
@@ -32,7 +34,9 @@ function currentMonth(): string {
 }
 
 export function DashboardPage() {
+  const navigate = useNavigate()
   const { openAddTransaction } = useAddTransaction()
+  const { openWallet } = useWalletDetail()
   const { show } = useToast()
   const { wallets: storeWallets, version } = useStore()
 
@@ -145,7 +149,7 @@ export function DashboardPage() {
             <p className="mt-0.5 text-xs text-ink-soft">
               Tambahkan uang kas, rekening bank, atau e-wallet Anda.
             </p>
-            <Link to="/dompet" className="mt-3">
+            <Link to="/dompet?tambah=1" className="mt-3">
               <Button size="sm" variant="outline">
                 Tambah Dompet
               </Button>
@@ -159,9 +163,13 @@ export function DashboardPage() {
                 wallet={wallet}
                 size="compact"
                 hidden={balanceHidden}
-                onClick={() => {}}
+                onClick={() => openWallet(wallet.id)}
               />
             ))}
+            <AddWalletCard
+              size="compact"
+              onClick={() => navigate('/dompet?tambah=1')}
+            />
           </div>
         )}
       </SectionMotion>
