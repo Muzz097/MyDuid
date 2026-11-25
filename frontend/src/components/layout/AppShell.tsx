@@ -21,6 +21,7 @@ import {
 } from '@/features/transactions/AddTransactionContext'
 import { WalletDetailPanel } from '@/features/wallets/WalletDetailPanel'
 import { WalletDetailProvider } from '@/features/wallets/WalletDetailContext'
+import { TransferSheet } from '@/features/wallets/TransferSheet'
 import { QuickActionSheet } from '@/features/transactions/QuickActionSheet'
 import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/cn'
@@ -130,6 +131,7 @@ function AppShellInner() {
   const { user, logout } = useAuth()
   const { openAddTransaction } = useAddTransaction()
   const [quickActionOpen, setQuickActionOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useState(false)
   const headerHidden = useHideOnScroll()
 
   const meta = getPageMeta(pathname)
@@ -385,6 +387,12 @@ function AppShellInner() {
         onClose={() => setQuickActionOpen(false)}
         onSelectExpense={() => openAddTransaction('expense')}
         onSelectIncome={() => openAddTransaction('income')}
+        onSelectTransfer={() => setTransferOpen(true)}
+      />
+
+      <TransferSheet
+        open={transferOpen}
+        onClose={() => setTransferOpen(false)}
       />
     </div>
   )

@@ -14,6 +14,7 @@ type QuickActionSheetProps = {
   onClose: () => void
   onSelectExpense: () => void
   onSelectIncome: () => void
+  onSelectTransfer?: () => void
 }
 
 type ActionItem = {
@@ -32,6 +33,7 @@ export function QuickActionSheet({
   onClose,
   onSelectExpense,
   onSelectIncome,
+  onSelectTransfer,
 }: QuickActionSheetProps) {
   const actions: ActionItem[] = [
     {
@@ -62,8 +64,10 @@ export function QuickActionSheet({
       description: 'Pindah dana antar dompet atau rekening',
       icon: ArrowRightLeft,
       variant: 'default',
-      disabled: true,
-      badge: 'Segera Hadir',
+      onClick: () => {
+        onClose()
+        onSelectTransfer?.()
+      },
     },
     {
       id: 'ocr',

@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
-import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
+import { ArrowRightLeft, Eye, EyeOff, Pencil, Plus } from 'lucide-react'
 import { IconButton } from '@/components/ui/IconButton'
 import { Sheet } from '@/components/ui/Sheet'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { WalletCard } from '@/components/ui/WalletCard'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
+import { TransferSheet } from '@/features/wallets/TransferSheet'
 import { useWalletDetail } from '@/features/wallets/useWalletDetail'
 import { WalletFormSheet } from '@/features/wallets/WalletFormSheet'
+import { cn } from '@/lib/cn'
+import { formatRupiah } from '@/lib/money'
 import { useStore } from '@/lib/store'
 
 const SHEET_EXIT_MS = 250
@@ -26,6 +27,8 @@ export function WalletDetailPanel() {
   const { wallets, loading, refresh } = useStore()
   const [hiddenForId, setHiddenForId] = useState<number | null>(null)
   const [editOpen, setEditOpen] = useState(false)
+  const [transferOpen, setTransferOpen] = useState(false)
+  const [transferSourceId, setTransferSourceId] = useState<number | null>(null)
 
   const wallet = walletId == null ? null : (wallets.find((item) => item.id === walletId) ?? null)
   const open = walletId != null
@@ -41,6 +44,16 @@ export function WalletDetailPanel() {
         lockWallet: true,
         onSaved: () => openWallet(id),
       })
+    }, prefersReducedMotion() ? 0 : SHEET_EXIT_MS)
+  }
+
+  function handleTransfer() {
+    if (walletId == null) return
+    const id = walletId
+    setTransferSourceId(id)
+    closeWallet({ replace: true })
+    window.setTimeout(() => {
+      setTransferOpen(true)
     }, prefersReducedMotion() ? 0 : SHEET_EXIT_MS)
   }
 
@@ -63,45 +76,96 @@ export function WalletDetailPanel() {
                 wallet={wallet}
                 size="compact"
                 hidden={balanceHidden}
-                action={
-                  <IconButton
-                    label={balanceHidden ? 'Tampilkan saldo' : 'Sembunyikan saldo'}
-                    variant="ghost"
-                    onClick={() =>
-                      setHiddenForId((current) =>
-                        current === wallet.id ? null : wallet.id,
-                      )
-                    }
-                    className="border border-white/25 bg-brand-900/25 text-white hover:bg-brand-900/40 hover:text-white"
-                    icon={
-                      balanceHidden ? (
-                        <Eye size={18} strokeWidth={1.75} aria-hidden />
-                      ) : (
-                        <EyeOff size={18} strokeWidth={1.75} aria-hidden />
-                      )
-                    }
-                  />
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-line bg-card px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-ink-soft">Saldo saat ini</p>
+                <p
+                  className={cn(
+                    'mt-0.5 truncate text-2xl font-bold tracking-tight tabular',
+                    wallet.balance < 0 ? 'text-danger-500' : 'text-ink',
+                  )}
+                >
+                  {balanceHidden ? 'Rp ••••••' : formatRupiah(wallet.balance)}
+                </p>
+              </div>
+              <IconButton
+                label={balanceHidden ? 'Tampilkan saldo' : 'Sembunyikan saldo'}
+                variant="ghost"
+                onClick={() =>
+                  setHiddenForId((current) =>
+                    current === wallet.id ? null : wallet.id,
+                  )
+                }
+                icon={
+                  balanceHidden ? (
+                    <Eye size={18} strokeWidth={1.75} aria-hidden />
+                  ) : (
+                    <EyeOff size={18} strokeWidth={1.75} aria-hidden />
+                  )
                 }
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-              <Button fullWidth onClick={handleCatat}>
-                Catat
-              </Button>
-              <Button fullWidth variant="secondary" disabled>
-                <span className="inline-flex items-center gap-2">
-                  Pindah dana
-                  <Badge variant="neutral">Segera hadir</Badge>
+            <div
+              role="group"
+              aria-label="Aksi dompet"
+              className="grid grid-cols-3 divide-x divide-line overflow-hidden rounded-[var(--radius-card)] bg-muted"
+            >
+              <button
+                type="button"
+                onClick={handleCatat}
+                className="group flex min-h-11 flex-col items-center justify-center gap-1.5 px-2 py-3 text-center transition duration-150 hover:bg-brand-50/70 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--focus-ring)] motion-reduce:transform-none motion-reduce:transition-none dark:hover:bg-brand-900/20"
+              >
+                <span className="inline-flex size-9 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-transform duration-150 group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none">
+                  <Plus size={18} strokeWidth={2} aria-hidden />
                 </span>
-              </Button>
-              <Button fullWidth variant="outline" onClick={() => setEditOpen(true)}>
-                Ubah
-              </Button>
+                <span className="text-xs font-semibold text-brand-700 dark:text-brand-300">
+                  Catat
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleTransfer}
+                className="group flex min-h-11 flex-col items-center justify-center gap-1.5 px-2 py-3 text-center transition duration-150 hover:bg-card/70 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--focus-ring)] motion-reduce:transform-none motion-reduce:transition-none"
+              >
+                <span className="inline-flex size-9 items-center justify-center rounded-full border border-line bg-card text-ink transition-transform duration-150 group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none">
+                  <ArrowRightLeft size={17} strokeWidth={1.8} aria-hidden />
+                </span>
+                <span className="text-xs font-medium text-ink">
+                  Pindah dana
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setEditOpen(true)}
+                className="group flex min-h-11 flex-col items-center justify-center gap-1.5 px-2 py-3 text-center transition duration-150 hover:bg-card/70 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--focus-ring)] motion-reduce:transform-none motion-reduce:transition-none"
+              >
+                <span className="inline-flex size-9 items-center justify-center rounded-full border border-line bg-card text-ink transition-transform duration-150 group-hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none">
+                  <Pencil size={17} strokeWidth={1.8} aria-hidden />
+                </span>
+                <span className="text-xs font-medium text-ink">
+                  Ubah
+                </span>
+              </button>
             </div>
 
             <section aria-label="Riwayat dompet" className="space-y-2">
-              <h3 className="text-sm font-semibold text-ink">Riwayat</h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-ink">Riwayat</h3>
+                <button
+                  type="button"
+                  disabled
+                  title="Tersedia pada pembaruan berikutnya"
+                  className="text-xs font-medium text-ink-soft/70 disabled:cursor-not-allowed"
+                >
+                  Lihat semua
+                </button>
+              </div>
               <p className="rounded-[var(--radius-card)] border border-dashed border-line bg-muted/50 px-4 py-8 text-center text-sm text-ink-soft">
                 Riwayat dompet segera hadir
               </p>
@@ -115,6 +179,19 @@ export function WalletDetailPanel() {
         wallet={wallet}
         onClose={() => setEditOpen(false)}
         onSaved={refresh}
+      />
+
+      <TransferSheet
+        open={transferOpen}
+        initialSourceWalletId={transferSourceId ?? undefined}
+        lockSourceWallet
+        onClose={() => setTransferOpen(false)}
+        onSaved={() => {
+          setTransferOpen(false)
+          if (transferSourceId != null) {
+            openWallet(transferSourceId)
+          }
+        }}
       />
     </>
   )
