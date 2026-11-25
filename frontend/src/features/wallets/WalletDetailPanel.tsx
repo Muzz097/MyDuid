@@ -8,8 +8,6 @@ import { useAddTransaction } from '@/features/transactions/AddTransactionContext
 import { TransferSheet } from '@/features/wallets/TransferSheet'
 import { useWalletDetail } from '@/features/wallets/useWalletDetail'
 import { WalletFormSheet } from '@/features/wallets/WalletFormSheet'
-import { cn } from '@/lib/cn'
-import { formatRupiah } from '@/lib/money'
 import { useStore } from '@/lib/store'
 
 const SHEET_EXIT_MS = 250
@@ -76,35 +74,24 @@ export function WalletDetailPanel() {
                 wallet={wallet}
                 size="compact"
                 hidden={balanceHidden}
-              />
-            </div>
-
-            <div className="flex items-center justify-between gap-3 rounded-[var(--radius-card)] border border-line bg-card px-4 py-3">
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-ink-soft">Saldo saat ini</p>
-                <p
-                  className={cn(
-                    'mt-0.5 truncate text-2xl font-bold tracking-tight tabular',
-                    wallet.balance < 0 ? 'text-danger-500' : 'text-ink',
-                  )}
-                >
-                  {balanceHidden ? 'Rp ••••••' : formatRupiah(wallet.balance)}
-                </p>
-              </div>
-              <IconButton
-                label={balanceHidden ? 'Tampilkan saldo' : 'Sembunyikan saldo'}
-                variant="ghost"
-                onClick={() =>
-                  setHiddenForId((current) =>
-                    current === wallet.id ? null : wallet.id,
-                  )
-                }
-                icon={
-                  balanceHidden ? (
-                    <Eye size={18} strokeWidth={1.75} aria-hidden />
-                  ) : (
-                    <EyeOff size={18} strokeWidth={1.75} aria-hidden />
-                  )
+                action={
+                  <IconButton
+                    label={balanceHidden ? 'Tampilkan saldo' : 'Sembunyikan saldo'}
+                    variant="ghost"
+                    onClick={() =>
+                      setHiddenForId((current) =>
+                        current === wallet.id ? null : wallet.id,
+                      )
+                    }
+                    className="border border-white/25 bg-brand-900/25 text-white hover:bg-brand-900/40 hover:text-white"
+                    icon={
+                      balanceHidden ? (
+                        <Eye size={18} strokeWidth={1.75} aria-hidden />
+                      ) : (
+                        <EyeOff size={18} strokeWidth={1.75} aria-hidden />
+                      )
+                    }
+                  />
                 }
               />
             </div>

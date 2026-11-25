@@ -14,6 +14,28 @@ const outlineMotion = cn(
   'motion-reduce:transition-none',
 )
 
+// Unified wallet silhouette: rounded body + integrated right flap + small clasp
+const WALLET_OUTLINE_PATH = [
+  'M 24 8',
+  'H 194',
+  'Q 206 8 212 18',
+  'H 244',
+  'Q 258 18 258 32',
+  'V 112',
+  'Q 258 126 244 126',
+  'H 212',
+  'Q 206 136 194 136',
+  'H 24',
+  'Q 8 136 8 120',
+  'V 24',
+  'Q 8 8 24 8',
+  'Z',
+  'M 232 72',
+  'm -5 0',
+  'a 5 5 0 1 0 10 0',
+  'a 5 5 0 1 0 -10 0',
+].join(' ')
+
 export function AddWalletCard({
   size = 'compact',
   onClick,
@@ -32,7 +54,7 @@ export function AddWalletCard({
         type="button"
         onClick={onClick}
         className={cn(
-          'group relative flex w-full min-h-11 flex-col items-center justify-center gap-1.5 overflow-hidden rounded-[var(--radius-card)] bg-transparent text-brand-600',
+          'group relative flex min-h-36 w-full flex-col items-center justify-center gap-1.5 overflow-hidden rounded-[var(--radius-card)] bg-transparent pl-4 pr-16 text-brand-600',
           'transition duration-200 hover:bg-brand-50/60 active:scale-[0.98]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)] focus-visible:ring-offset-2',
           'motion-reduce:transition-none motion-reduce:active:scale-100',
@@ -46,55 +68,25 @@ export function AddWalletCard({
           preserveAspectRatio="none"
           aria-hidden
           className={cn(
-            'pointer-events-none absolute inset-2 h-[calc(100%-1rem)] w-[calc(100%-1rem)] text-brand-500',
-            'transition-transform duration-300 group-hover:translate-x-1',
+            'pointer-events-none absolute inset-0 h-full w-full text-brand-500',
+            'transition-transform duration-300 group-hover:translate-x-0.5',
             'motion-reduce:transition-none motion-reduce:group-hover:translate-x-0',
           )}
         >
-          <rect
-            x="4"
-            y="8"
-            width="190"
-            height="128"
-            rx="28"
+          <path
+            d={WALLET_OUTLINE_PATH}
             strokeWidth="1.75"
             strokeDasharray="7 6"
-            vectorEffect="non-scaling-stroke"
-            className={outlineMotion}
-          />
-          <rect
-            x="168"
-            y="16"
-            width="88"
-            height="112"
-            rx="24"
-            strokeWidth="1.75"
-            strokeDasharray="7 6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
             className={outlineMotion}
           />
         </svg>
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 right-[12%] size-6 -translate-y-1/2 text-brand-500"
-        >
-          <circle
-            cx="12"
-            cy="12"
-            r="5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeDasharray="3 2.5"
-            className={cn(
-              'transition-[stroke-dashoffset] duration-300 group-hover:[stroke-dashoffset:-8]',
-              'motion-reduce:transition-none',
-            )}
-          />
-        </svg>
-        <Plus size={22} strokeWidth={1.75} aria-hidden className="relative z-10" />
-        <span className="relative z-10 text-sm font-semibold">Tambah dompet</span>
+        <Plus size={22} strokeWidth={1.75} aria-hidden className="relative z-10 shrink-0" />
+        <span className="relative z-10 text-center text-sm font-semibold leading-tight">
+          Tambah dompet
+        </span>
       </button>
     </div>
   )
