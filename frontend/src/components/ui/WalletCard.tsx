@@ -1,8 +1,9 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { WalletIcon } from '@/components/ui/WalletIcon'
+import { useWalletCardImage } from '@/hooks/useWalletCardImage'
 import { cn } from '@/lib/cn'
-import { getIcon } from '@/lib/icons'
 import { formatRupiah } from '@/lib/money'
-import type { Wallet } from '@/types'
+import type { Wallet, WalletCardTheme, WalletGroup, WalletIconType } from '@/types'
 
 export type WalletCardSize = 'compact' | 'full'
 
@@ -12,8 +13,15 @@ export type WalletCardWallet =
       id: number
       name: string
       type: Wallet['type']
+      group?: WalletGroup
+      card_theme?: WalletCardTheme
+      cardTheme?: WalletCardTheme
+      icon_type?: WalletIconType
+      iconType?: WalletIconType
       icon_key?: string
       iconKey?: string
+      has_card_image?: boolean
+      hasCardImage?: boolean
       balance: number
       isActive?: boolean
     }
@@ -22,6 +30,8 @@ export interface WalletCardProps {
   wallet: WalletCardWallet
   hidden?: boolean
   size?: WalletCardSize
+  imageSrc?: string | null
+  imageVersion?: number | string
   onClick?: () => void
   action?: ReactNode
   className?: string
@@ -33,24 +43,90 @@ const typeLabels: Record<Wallet['type'], string> = {
   ewallet: 'E-wallet',
 }
 
+const groupLabels: Record<WalletGroup, string> = {
+  daily: 'Sehari-hari',
+  savings: 'Tabungan',
+  investment: 'Investasi',
+}
+
+export const walletThemeClasses: Record<WalletCardTheme, string> = {
+  default: 'from-[var(--wallet-default-from)] to-[var(--wallet-default-to)]',
+  rose: 'from-[var(--wallet-rose-from)] to-[var(--wallet-rose-to)]',
+  ocean: 'from-[var(--wallet-ocean-from)] to-[var(--wallet-ocean-to)]',
+  emerald: 'from-[var(--wallet-emerald-from)] to-[var(--wallet-emerald-to)]',
+  sunset: 'from-[var(--wallet-sunset-from)] to-[var(--wallet-sunset-to)]',
+  graphite: 'from-[var(--wallet-graphite-from)] to-[var(--wallet-graphite-to)]',
+}
+
 function resolveIconKey(wallet: WalletCardWallet): string {
   if ('iconKey' in wallet && wallet.iconKey) return wallet.iconKey
   if ('icon_key' in wallet && wallet.icon_key) return wallet.icon_key
   return 'default'
 }
 
+function resolveIconType(wallet: WalletCardWallet): WalletIconType {
+  if ('iconType' in wallet && wallet.iconType) return wallet.iconType
+  if ('icon_type' in wallet && wallet.icon_type) return wallet.icon_type
+  return 'preset'
+}
+
+function resolveCardTheme(wallet: WalletCardWallet): WalletCardTheme {
+  const theme =
+    ('cardTheme' in wallet && wallet.cardTheme) ||
+    ('card_theme' in wallet && wallet.card_theme) ||
+    'default'
+  return theme in walletThemeClasses ? theme : 'default'
+}
+
+function resolveGroup(wallet: WalletCardWallet): WalletGroup | undefined {
+  if ('group' in wallet) return wallet.group
+  return undefined
+}
+
+function resolveHasCardImage(wallet: WalletCardWallet): boolean {
+  if ('hasCardImage' in wallet && typeof wallet.hasCardImage === 'boolean') {
+    return wallet.hasCardImage
+  }
+  if ('has_card_image' in wallet && typeof wallet.has_card_image === 'boolean') {
+    return wallet.has_card_image
+  }
+  return false
+}
+
 export function WalletCard({
   wallet,
   hidden = false,
   size = 'compact',
+  imageSrc,
+  imageVersion,
   onClick,
   action,
   className,
 }: WalletCardProps) {
-  const WalletIcon = getIcon(resolveIconKey(wallet))
+  const iconKey = resolveIconKey(wallet)
+  const iconType = resolveIconType(wallet)
+  const cardTheme = resolveCardTheme(wallet)
+  const themeGradient = walletThemeClasses[cardTheme]
   const typeLabel = typeLabels[wallet.type] ?? wallet.type
+  const walletGroup = resolveGroup(wallet)
+  const groupLabel = walletGroup ? groupLabels[walletGroup] : undefined
   const isArchived = wallet.isActive === false
   const hasAction = action != null
+  const hasCardImage = resolveHasCardImage(wallet)
+
+  const { src: fetchedSrc, error: fetchError } = useWalletCardImage(
+    wallet.id,
+    hasCardImage && imageSrc === undefined,
+    imageVersion,
+  )
+  const effectiveSrc = imageSrc !== undefined ? imageSrc : fetchedSrc
+  const [imgFailed, setImgFailed] = useState(false)
+
+  useEffect(() => {
+    setImgFailed(false)
+  }, [effectiveSrc])
+
+  const showPhoto = Boolean(effectiveSrc) && !imgFailed && !(imageSrc === undefined && fetchError)
 
   return (
     <div
@@ -76,16 +152,32 @@ export function WalletCard({
       >
         {/* Leather-like wallet shell */}
         <div
-          className="absolute inset-0 overflow-hidden rounded-[var(--radius-card)] border border-brand-800/35 bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 shadow-[var(--shadow-card)] transition-shadow duration-200 group-hover:shadow-md dark:border-white/10 motion-reduce:transition-none"
+          className={cn(
+            'absolute inset-0 overflow-hidden rounded-[var(--radius-card)] border border-black/20 bg-gradient-to-br shadow-[var(--shadow-card)] transition-shadow duration-200 group-hover:shadow-md dark:border-white/10 motion-reduce:transition-none',
+            themeGradient,
+          )}
           aria-hidden="true"
         >
+          {showPhoto && effectiveSrc ? (
+            <>
+              <img
+                src={effectiveSrc}
+                alt=""
+                onError={() => setImgFailed(true)}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/40 to-black/30" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-black/10" />
+          )}
           <div className="absolute inset-1.5 rounded-[calc(var(--radius-card)-0.3rem)] border border-dashed border-white/30" />
           <div className="absolute -right-12 -top-14 size-28 rotate-12 rounded-full border border-white/10" />
         </div>
 
         {/* Top flap silhouette */}
         <div
-          className="pointer-events-none absolute left-1.5 right-1.5 top-1.5 h-[4.25rem] overflow-hidden rounded-t-[calc(var(--radius-card)-0.3rem)] rounded-b-[0.85rem] border border-white/15 bg-gradient-to-r from-brand-400/70 via-brand-300/35 to-brand-700/20 shadow-sm [clip-path:polygon(0_0,100%_0,96%_100%,4%_100%)]"
+          className="pointer-events-none absolute left-1.5 right-1.5 top-1.5 h-[4.25rem] overflow-hidden rounded-t-[calc(var(--radius-card)-0.3rem)] rounded-b-[0.85rem] border border-white/15 bg-gradient-to-r from-white/20 via-white/10 to-black/15 shadow-sm [clip-path:polygon(0_0,100%_0,96%_100%,4%_100%)]"
           aria-hidden="true"
         >
           <div className="absolute inset-x-2.5 bottom-2 border-b border-dashed border-white/35" />
@@ -99,8 +191,8 @@ export function WalletCard({
           )}
         >
           <div className="flex items-center gap-2.5">
-            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/25 bg-brand-900/20 shadow-sm backdrop-blur-sm transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none">
-              <WalletIcon size={17} strokeWidth={1.8} aria-hidden />
+            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/25 bg-black/20 shadow-sm backdrop-blur-sm transition-transform duration-200 group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none">
+              <WalletIcon iconType={iconType} iconKey={iconKey} size={17} strokeWidth={1.8} />
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
@@ -115,6 +207,11 @@ export function WalletCard({
               </div>
               <p className="mt-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/75">
                 {typeLabel}
+                {groupLabel ? (
+                  <span className="ml-1.5 normal-case tracking-normal font-medium opacity-80">
+                    · {groupLabel}
+                  </span>
+                ) : null}
               </p>
             </div>
           </div>

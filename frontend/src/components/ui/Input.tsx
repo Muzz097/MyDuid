@@ -1,13 +1,15 @@
-import { useId, type InputHTMLAttributes } from 'react'
+import { useId, type InputHTMLAttributes, type Ref } from 'react'
 import { cn } from '@/lib/cn'
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+  ref?: Ref<HTMLInputElement>
   label?: string
   helperText?: string
   error?: string
 }
 
 export function Input({
+  ref,
   label,
   helperText,
   error,
@@ -31,6 +33,7 @@ export function Input({
         </label>
       ) : null}
       <input
+        ref={ref}
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}

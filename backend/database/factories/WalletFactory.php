@@ -23,9 +23,11 @@ class WalletFactory extends Factory
         return [
             'name' => fake()->words(2, true),
             'type' => fake()->randomElement(['cash', 'bank', 'ewallet']),
+            'group' => 'daily',
+            'card_theme' => 'default',
             'opening_balance' => fake()->numberBetween(0, 10_000_000),
             'icon_type' => 'preset',
-            'icon_key' => fake()->randomElement(['wallet', 'landmark', 'smartphone', 'credit-card']),
+            'icon_key' => fake()->randomElement(['cash', 'bank', 'ewallet', 'default']),
             'icon_path' => null,
             'is_active' => true,
         ];

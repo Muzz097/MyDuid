@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
+use App\Http\Controllers\WalletCardImageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
@@ -22,6 +23,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', LogoutController::class);
     Route::get('/user', fn (Request $r) => new UserResource($r->user()));
     Route::patch('/wallets/{wallet}/archive', [WalletController::class, 'archive']);
+    Route::get('/wallets/{wallet}/activity', [WalletController::class, 'activity']);
+    Route::post('/wallets/{wallet}/card-image', [WalletCardImageController::class, 'store']);
+    Route::get('/wallets/{wallet}/card-image', [WalletCardImageController::class, 'show']);
+    Route::delete('/wallets/{wallet}/card-image', [WalletCardImageController::class, 'destroy']);
     Route::patch('/categories/{category}/archive', [CategoryController::class, 'archive']);
     Route::apiResource('wallets', WalletController::class);
     Route::apiResource('categories', CategoryController::class);

@@ -7,6 +7,7 @@ import { useSearchParams } from 'react-router-dom'
 import {
   WalletDetailContext,
   type CloseWalletOptions,
+  type OpenWalletOptions,
 } from '@/features/wallets/useWalletDetail'
 
 function parseWalletId(value: string | null): number | null {
@@ -18,12 +19,18 @@ function parseWalletId(value: string | null): number | null {
 export function WalletDetailProvider({ children }: { children: ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const walletId = parseWalletId(searchParams.get('dompet'))
+  const initialEdit = searchParams.get('ubah') === '1'
 
   const openWallet = useCallback(
-    (id: number) => {
+    (id: number, options?: OpenWalletOptions) => {
       setSearchParams((prev) => {
         const next = new URLSearchParams(prev)
         next.set('dompet', String(id))
+        if (options?.edit) {
+          next.set('ubah', '1')
+        } else {
+          next.delete('ubah')
+        }
         if (next.toString() === prev.toString()) return prev
         return next
       })
@@ -35,9 +42,10 @@ export function WalletDetailProvider({ children }: { children: ReactNode }) {
     (options?: CloseWalletOptions) => {
       setSearchParams(
         (prev) => {
-          if (!prev.has('dompet')) return prev
+          if (!prev.has('dompet') && !prev.has('ubah')) return prev
           const next = new URLSearchParams(prev)
           next.delete('dompet')
+          next.delete('ubah')
           return next
         },
         { replace: options?.replace ?? false },
@@ -47,8 +55,8 @@ export function WalletDetailProvider({ children }: { children: ReactNode }) {
   )
 
   const value = useMemo(
-    () => ({ walletId, openWallet, closeWallet }),
-    [walletId, openWallet, closeWallet],
+    () => ({ walletId, initialEdit, openWallet, closeWallet }),
+    [walletId, initialEdit, openWallet, closeWallet],
   )
 
   return (

@@ -10,40 +10,9 @@ import {
   StaggerItem,
 } from '@/components/ui'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
+import { formatGroupLabel } from '@/lib/date'
 import { useStore } from '@/lib/store'
 import type { Transaction } from '@/types'
-
-function todayJakarta(): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Jakarta',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date())
-}
-
-function shiftJakartaDate(iso: string, days: number): string {
-  const date = new Date(`${iso}T12:00:00+07:00`)
-  date.setDate(date.getDate() + days)
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Jakarta',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date)
-}
-
-function formatGroupLabel(iso: string): string {
-  const today = todayJakarta()
-  if (iso === today) return 'Hari ini'
-  if (iso === shiftJakartaDate(today, -1)) return 'Kemarin'
-  const date = new Date(`${iso}T00:00:00`)
-  return date.toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
-}
 
 type Group = {
   date: string

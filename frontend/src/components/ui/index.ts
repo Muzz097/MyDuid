@@ -18,6 +18,8 @@ export { ToastProvider, useToast } from './Toast'
 export { TransactionItem } from './TransactionItem'
 export { WalletCard } from './WalletCard'
 export type { WalletCardProps, WalletCardSize, WalletCardWallet } from './WalletCard'
+export { WalletIcon } from './WalletIcon'
+export type { WalletIconProps } from './WalletIcon'
 export { MyDuidLoader } from './MyDuidLoader'
 export type { MyDuidLoaderProps, MyDuidLoaderSize, MyDuidLoaderVariant } from './MyDuidLoader'
 export {

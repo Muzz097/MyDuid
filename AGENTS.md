@@ -79,7 +79,7 @@ Code identifiers, class names, and technical comments: English unless existing c
 - Do not hardcode hex colors in page components. Use the design tokens in `frontend/src/index.css`; change token definitions only as part of an explicitly assigned design-system task.
 - Current semantic meanings: brand color for primary actions; income color for incoming money; expense/coral color for outgoing money; warning/danger for status. Never communicate status by color alone.
 - Use tabular numerals for monetary values.
-- Use lucide-react icons, not emoji, for product UI. Respect existing icon mapping utilities and stored icon keys.
+- Use lucide-react icons, not emoji, for product UI (emoji is permitted only as a user-chosen wallet icon). Respect existing icon mapping utilities and stored icon keys.
 - Mobile-first; touch targets at least 44px; support keyboard focus and accessible labels.
 - Respect `prefers-reduced-motion`. Microinteractions should communicate state, not merely decorate.
 - Include loading, empty, error, disabled, and success states where relevant.

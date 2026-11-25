@@ -1,10 +1,26 @@
 export type TransactionType = 'income' | 'expense'
 
+export type WalletGroup = 'daily' | 'savings' | 'investment'
+
+export type WalletCardTheme =
+  | 'default'
+  | 'rose'
+  | 'ocean'
+  | 'emerald'
+  | 'sunset'
+  | 'graphite'
+
+export type WalletIconType = 'preset' | 'emoji'
+
 export interface Wallet {
   id: number
   name: string
   type: 'cash' | 'bank' | 'ewallet'
-  iconKey: string          // identifier ikon bawaan, mis. "wallet-cat"
+  group: WalletGroup      // kelompok: sehari-hari, tabungan, investasi
+  cardTheme: WalletCardTheme
+  iconType: WalletIconType
+  iconKey: string          // identifier ikon bawaan atau 1 emoji
+  hasCardImage: boolean
   balance: number          // Rupiah utuh
   isActive?: boolean
 }
@@ -55,7 +71,11 @@ export interface DashboardData {
     id: number
     name: string
     type: Wallet['type']
+    group: WalletGroup
+    card_theme?: WalletCardTheme
+    icon_type?: WalletIconType
     icon_key: string
+    has_card_image?: boolean
     balance: number
   }>
   daily_cash_flow: DailyCashFlowItem[]
@@ -70,4 +90,39 @@ export interface DashboardData {
     wallet: { id: number; name: string } | null
     category: { id: number; name: string; icon_key: string | null } | null
   }>
+}
+
+
+// --- Wallet Activity ---
+
+export interface ActivityTransaction {
+  kind: 'transaction'
+  id: number
+  date: string
+  amount: number
+  notes: string | null
+  type: TransactionType
+  category: { id: number; name: string; icon_key: string } | null
+}
+
+export interface ActivityTransfer {
+  kind: 'transfer'
+  id: number
+  date: string
+  amount: number
+  notes: string | null
+  direction: 'in' | 'out'
+  counterparty_wallet: { id: number; name: string } | null
+}
+
+export type WalletActivityItem = ActivityTransaction | ActivityTransfer
+
+export interface WalletActivityResponse {
+  data: WalletActivityItem[]
+  meta: {
+    current_page: number
+    last_page: number
+    per_page: number
+    total: number
+  }
 }

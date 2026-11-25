@@ -9,7 +9,15 @@ import {
 } from 'react'
 import { api, ApiError } from '@/lib/api'
 import { useAuth } from '@/lib/auth'
-import type { Category, Transaction, TransactionType, Wallet } from '@/types'
+import type {
+  Category,
+  Transaction,
+  TransactionType,
+  Wallet,
+  WalletCardTheme,
+  WalletGroup,
+  WalletIconType,
+} from '@/types'
 
 type DataEnvelope<T> = { data: T }
 
@@ -17,7 +25,11 @@ type ApiWallet = {
   id: number
   name: string
   type: Wallet['type']
+  group: WalletGroup
+  card_theme?: WalletCardTheme
+  icon_type?: WalletIconType
   icon_key: string
+  has_card_image?: boolean
   balance: number
   is_active?: boolean
 }
@@ -61,7 +73,11 @@ function mapWallet(w: ApiWallet): Wallet {
     id: w.id,
     name: w.name,
     type: w.type,
+    group: w.group,
+    cardTheme: w.card_theme ?? 'default',
+    iconType: w.icon_type ?? 'preset',
     iconKey: w.icon_key,
+    hasCardImage: w.has_card_image ?? false,
     balance: w.balance,
     isActive: w.is_active,
   }

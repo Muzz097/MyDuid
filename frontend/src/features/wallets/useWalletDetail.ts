@@ -1,12 +1,17 @@
 import { createContext, useContext } from 'react'
 
+export type OpenWalletOptions = {
+  edit?: boolean
+}
+
 export type CloseWalletOptions = {
   replace?: boolean
 }
 
 export type WalletDetailContextValue = {
   walletId: number | null
-  openWallet: (id: number) => void
+  initialEdit: boolean
+  openWallet: (id: number, options?: OpenWalletOptions) => void
   closeWallet: (options?: CloseWalletOptions) => void
 }
 

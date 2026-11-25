@@ -22,13 +22,14 @@ export async function csrf() {
 
 export async function api<T = unknown>(path: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? 'GET').toUpperCase()
+  const isFormData = init.body instanceof FormData
   const res = await fetch(`${BASE}/api${path}`, {
     ...init,
     method,
     credentials: 'include',
     headers: {
       Accept: 'application/json',
-      ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(!isFormData && init.body ? { 'Content-Type': 'application/json' } : {}),
       ...(method !== 'GET' ? { 'X-XSRF-TOKEN': xsrf() } : {}),
       ...init.headers,
     },

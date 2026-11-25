@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'type', 'opening_balance', 'icon_type', 'icon_key', 'icon_path', 'is_active'])]
+#[Fillable(['name', 'type', 'group', 'card_theme', 'card_image_path', 'opening_balance', 'icon_type', 'icon_key', 'icon_path', 'is_active'])]
 class Wallet extends Model
 {
     /** @use HasFactory<WalletFactory> */

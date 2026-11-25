@@ -23,6 +23,7 @@ import {
 import { BudgetFormSheet } from '@/features/budgets/BudgetFormSheet'
 import { ApiError, api } from '@/lib/api'
 import { getIcon } from '@/lib/icons'
+import { WalletIcon } from '@/components/ui/WalletIcon'
 import { formatRupiah } from '@/lib/money'
 import { useStore } from '@/lib/store'
 
@@ -223,12 +224,12 @@ export function BudgetsPage() {
       ) : (
         <StaggerContainer className="space-y-3">
           {budgets.map((budget, budgetIdx) => {
-            const walletIconKey = wallets.find(
+            const matchedWallet = wallets.find(
               (wallet) => wallet.id === budget.wallet_id,
-            )?.iconKey
-            const Icon = getIcon(
-              budget.category?.icon_key ?? walletIconKey ?? 'default',
             )
+            const CategoryIcon = budget.category
+              ? getIcon(budget.category.icon_key ?? 'default')
+              : null
             const title =
               budget.category && budget.wallet
                 ? `${budget.category.name} · ${budget.wallet.name}`
@@ -238,7 +239,16 @@ export function BudgetsPage() {
                 <Card className="space-y-4">
                   <div className="flex items-start gap-3">
                     <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-expense-50 text-expense-500 dark:bg-expense-950/40 dark:text-expense-400">
-                      <Icon size={20} strokeWidth={1.75} aria-hidden />
+                      {CategoryIcon ? (
+                        <CategoryIcon size={20} strokeWidth={1.75} aria-hidden />
+                      ) : (
+                        <WalletIcon
+                          iconType={matchedWallet?.iconType}
+                          iconKey={matchedWallet?.iconKey ?? 'default'}
+                          size={20}
+                          strokeWidth={1.75}
+                        />
+                      )}
                     </span>
                     <div className="min-w-0 flex-1">
                       <h2 className="truncate font-semibold text-ink tracking-tight">{title}</h2>

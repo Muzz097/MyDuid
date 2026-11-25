@@ -1,9 +1,9 @@
 import type { Budget, Category, Transaction, Wallet } from '@/types'
 
 export const wallets: Wallet[] = [
-  { id: 1, name: 'Kas', type: 'cash', iconKey: 'cash', balance: 350000 },
-  { id: 2, name: 'BCA', type: 'bank', iconKey: 'bank', balance: 4200000 },
-  { id: 3, name: 'E-wallet', type: 'ewallet', iconKey: 'ewallet', balance: 1125000 },
+  { id: 1, name: 'Kas', type: 'cash', group: 'daily', cardTheme: 'default', iconType: 'preset', iconKey: 'cash', hasCardImage: false, balance: 350000 },
+  { id: 2, name: 'BCA', type: 'bank', group: 'daily', cardTheme: 'default', iconType: 'preset', iconKey: 'bank', hasCardImage: false, balance: 4200000 },
+  { id: 3, name: 'E-wallet', type: 'ewallet', group: 'daily', cardTheme: 'default', iconType: 'preset', iconKey: 'ewallet', hasCardImage: false, balance: 1125000 },
 ]
 
 export const categories: Category[] = [

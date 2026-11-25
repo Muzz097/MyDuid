@@ -15,8 +15,9 @@ import { AddWalletCard } from '@/features/wallets/AddWalletCard'
 import { useWalletDetail } from '@/features/wallets/useWalletDetail'
 import { WalletFormSheet } from '@/features/wallets/WalletFormSheet'
 import { ApiError, api } from '@/lib/api'
+import { formatRupiah } from '@/lib/money'
 import { useStore } from '@/lib/store'
-import type { Wallet } from '@/types'
+import type { Wallet, WalletCardTheme, WalletGroup, WalletIconType } from '@/types'
 
 type WalletRecord = Wallet & {
   isActive: boolean
@@ -26,7 +27,11 @@ type ApiWallet = {
   id: number
   name: string
   type: Wallet['type']
+  group: WalletGroup
+  card_theme?: WalletCardTheme
+  icon_type?: WalletIconType
   icon_key: string
+  has_card_image?: boolean
   balance: number
   is_active: boolean
 }
@@ -38,11 +43,26 @@ function mapWallet(wallet: ApiWallet): WalletRecord {
     id: wallet.id,
     name: wallet.name,
     type: wallet.type,
+    group: wallet.group,
+    cardTheme: wallet.card_theme ?? 'default',
+    iconType: wallet.icon_type ?? 'preset',
     iconKey: wallet.icon_key,
+    hasCardImage: wallet.has_card_image ?? false,
     balance: wallet.balance,
     isActive: wallet.is_active,
   }
 }
+
+type GroupMeta = {
+  value: WalletGroup
+  label: string
+}
+
+const GROUP_ORDER: GroupMeta[] = [
+  { value: 'daily', label: 'Sehari-hari' },
+  { value: 'savings', label: 'Tabungan' },
+  { value: 'investment', label: 'Investasi' },
+]
 
 function WalletSkeleton() {
   return (
@@ -64,7 +84,7 @@ function WalletSkeleton() {
 }
 
 export function WalletsPage() {
-  const { refresh } = useStore()
+  const { refresh, version } = useStore()
   const { show } = useToast()
   const { openWallet } = useWalletDetail()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -72,7 +92,6 @@ export function WalletsPage() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
-  const [editing, setEditing] = useState<Wallet | null>(null)
   const [menuId, setMenuId] = useState<number | null>(null)
   const [pendingAction, setPendingAction] = useState<{
     wallet: WalletRecord
@@ -97,11 +116,10 @@ export function WalletsPage() {
 
   useEffect(() => {
     void loadWallets().catch(() => undefined)
-  }, [loadWallets])
+  }, [loadWallets, version])
 
   useEffect(() => {
     if (searchParams.get('tambah') !== '1') return
-    setEditing(null)
     setFormOpen(true)
     setSearchParams(
       (prev) => {
@@ -152,15 +170,36 @@ export function WalletsPage() {
   }
 
   function openCreateForm() {
-    setEditing(null)
     setFormOpen(true)
   }
 
-  function openEditForm(wallet: WalletRecord) {
-    setEditing(wallet)
-    setFormOpen(true)
+  function openEditPanel(wallet: WalletRecord) {
     setMenuId(null)
+    openWallet(wallet.id, { edit: true })
   }
+
+  // Build per-group map (with cumulative delay offsets for animation)
+  const groupedWallets = GROUP_ORDER.reduce<
+    Array<GroupMeta & { items: WalletRecord[]; startDelay: number; subtotal: number }>
+  >((acc, g) => {
+    const prevTotal = acc.reduce((n, x) => n + x.items.length, 0)
+    const items = wallets.filter((w) => w.group === g.value)
+    return [
+      ...acc,
+      {
+        ...g,
+        items,
+        startDelay: prevTotal,
+        subtotal: items.reduce((sum, w) => sum + w.balance, 0),
+      },
+    ]
+  }, [])
+
+  const totalAsset = wallets.reduce((sum, w) => sum + w.balance, 0)
+
+  // Visible groups (non-empty) for AddWalletCard placement
+  const visibleGroups = groupedWallets.filter((g) => g.items.length > 0)
+  const firstVisibleGroup = visibleGroups[0]?.value ?? 'daily'
 
   return (
     <div className="space-y-6 pb-6">
@@ -179,69 +218,142 @@ export function WalletsPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {wallets.map((wallet, idx) => (
-            <SectionMotion key={wallet.id} delay={idx * 40}>
-              <WalletCard
-                wallet={wallet}
-                size="full"
-                onClick={() => openWallet(wallet.id)}
-                action={
-                  <div className="relative" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      aria-label={`Aksi untuk ${wallet.name}`}
-                      aria-expanded={menuId === wallet.id}
-                      onClick={() =>
-                        setMenuId((current) =>
-                          current === wallet.id ? null : wallet.id,
-                        )
-                      }
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] border border-white/25 bg-brand-900/25 text-white transition duration-200 hover:bg-brand-900/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
-                    >
-                      <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
-                    </button>
-                    {menuId === wallet.id ? (
-                      <div className="absolute right-0 top-full z-10 mt-1 min-w-36 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
-                        <button
-                          type="button"
-                          onClick={() => openEditForm(wallet)}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Ubah
-                        </button>
-                        <button
-                          type="button"
-                          disabled={!wallet.isActive}
-                          onClick={() => {
-                            setPendingAction({ wallet, action: 'archive' })
-                            setMenuId(null)
-                          }}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Arsipkan
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPendingAction({ wallet, action: 'delete' })
-                            setMenuId(null)
-                          }}
-                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 transition hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                        >
-                          Hapus
-                        </button>
+        <>
+          {/* Ringkasan total aset */}
+          {wallets.length > 0 ? (
+            <SectionMotion delay={0}>
+              <div className="rounded-[var(--radius-card)] border border-line bg-card p-4 shadow-xs">
+                <div className="mb-3 flex items-baseline justify-between">
+                  <p className="text-sm font-semibold text-ink">Total Aset</p>
+                  <p className="tabular-nums text-lg font-extrabold text-ink">
+                    {formatRupiah(totalAsset)}
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  {groupedWallets.map((g) =>
+                    g.items.length > 0 ? (
+                      <div
+                        key={g.value}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-ink-soft">{g.label}</span>
+                        <span className="tabular-nums font-medium text-ink">
+                          {formatRupiah(g.subtotal)}
+                        </span>
                       </div>
+                    ) : null,
+                  )}
+                </div>
+              </div>
+            </SectionMotion>
+          ) : null}
+
+          {/* Grid per kelompok */}
+          <div className="space-y-6">
+            {groupedWallets.map((g) => {
+              const isFirst = g.value === firstVisibleGroup
+              const showSection = g.items.length > 0 || isFirst
+              if (!showSection) return null
+
+              return (
+                <div key={g.value}>
+                  <div className="mb-3 flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-ink">{g.label}</h2>
+                    {g.items.length > 0 ? (
+                      <span className="tabular-nums text-sm font-medium text-ink-soft">
+                        {formatRupiah(g.subtotal)}
+                      </span>
                     ) : null}
                   </div>
-                }
-              />
-            </SectionMotion>
-          ))}
-          <SectionMotion delay={wallets.length * 40}>
-            <AddWalletCard size="full" onClick={openCreateForm} />
-          </SectionMotion>
-        </div>
+
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {g.items.map((wallet, idx) => {
+                      const delay = (g.startDelay + idx) * 40
+                      return (
+                        <SectionMotion key={wallet.id} delay={delay}>
+                          <WalletCard
+                            wallet={wallet}
+                            size="full"
+                            imageVersion={version}
+                            onClick={() => openWallet(wallet.id)}
+                            action={
+                              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                                <button
+                                  type="button"
+                                  aria-label={`Aksi untuk ${wallet.name}`}
+                                  aria-expanded={menuId === wallet.id}
+                                  onClick={() =>
+                                    setMenuId((current) =>
+                                      current === wallet.id ? null : wallet.id,
+                                    )
+                                  }
+                                  className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] border border-white/25 bg-brand-900/25 text-white transition duration-200 hover:bg-brand-900/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                                >
+                                  <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
+                                </button>
+                                {menuId === wallet.id ? (
+                                  <div className="absolute right-0 top-full z-10 mt-1 min-w-36 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
+                                    <button
+                                      type="button"
+                                      onClick={() => openEditPanel(wallet)}
+                                      className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                                    >
+                                      Ubah
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={!wallet.isActive}
+                                      onClick={() => {
+                                        setPendingAction({ wallet, action: 'archive' })
+                                        setMenuId(null)
+                                      }}
+                                      className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                                    >
+                                      Arsipkan
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setPendingAction({ wallet, action: 'delete' })
+                                        setMenuId(null)
+                                      }}
+                                      className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 transition hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                                    >
+                                      Hapus
+                                    </button>
+                                  </div>
+                                ) : null}
+                              </div>
+                            }
+                          />
+                        </SectionMotion>
+                      )
+                    })}
+
+                    {/* AddWalletCard hanya di kelompok pertama yang tampil */}
+                    {isFirst ? (
+                      <SectionMotion delay={(g.startDelay + g.items.length) * 40}>
+                        <AddWalletCard size="full" onClick={openCreateForm} />
+                      </SectionMotion>
+                    ) : null}
+                  </div>
+                </div>
+              )
+            })}
+
+            {/* Jika tidak ada dompet sama sekali, tampilkan AddWalletCard di bagian Sehari-hari */}
+            {wallets.length === 0 ? (
+              <div>
+                <div className="mb-3">
+                  <h2 className="text-sm font-semibold text-ink">Sehari-hari</h2>
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  <AddWalletCard size="full" onClick={openCreateForm} />
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </>
       )}
 
       {!loading && wallets.length > 0 ? (
@@ -257,7 +369,6 @@ export function WalletsPage() {
 
       <WalletFormSheet
         open={formOpen}
-        wallet={editing}
         onClose={() => setFormOpen(false)}
         onSaved={reloadAfterMutation}
       />

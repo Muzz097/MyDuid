@@ -296,7 +296,11 @@ export function DashboardPage() {
                       id: tx.wallet.id,
                       name: tx.wallet.name,
                       type: 'cash' as const,
+                      group: 'daily' as const,
+                      cardTheme: 'default' as const,
+                      iconType: 'preset' as const,
                       iconKey: 'default',
+                      hasCardImage: false,
                       balance: 0,
                     }
                   : null
