@@ -68,7 +68,7 @@ export function TotalAssetCard({
         aria-hidden="true"
       >
         <img
-          src="/mascot.jpg"
+          src="/maskot.png"
           alt=""
           className="size-full object-contain filter grayscale contrast-125"
         />
