@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { MoreVertical, Plus, Wallet as WalletIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -11,10 +10,9 @@ import {
   PageHeaderMotion,
   SectionMotion,
 } from '@/components/ui/Motion'
+import { WalletCard } from '@/components/ui/WalletCard'
 import { WalletFormSheet } from '@/features/wallets/WalletFormSheet'
 import { ApiError, api } from '@/lib/api'
-import { getIcon } from '@/lib/icons'
-import { formatRupiah } from '@/lib/money'
 import { useStore } from '@/lib/store'
 import type { Wallet } from '@/types'
 
@@ -32,12 +30,6 @@ type ApiWallet = {
 }
 
 type WalletAction = 'archive' | 'delete'
-
-const walletTypeLabels: Record<Wallet['type'], string> = {
-  cash: 'Kas',
-  bank: 'Bank',
-  ewallet: 'E-wallet',
-}
 
 function mapWallet(wallet: ApiWallet): WalletRecord {
   return {
@@ -183,90 +175,64 @@ export function WalletsPage() {
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {wallets.map((wallet, idx) => {
-            const Icon = getIcon(wallet.iconKey)
-            return (
-              <SectionMotion
-                key={wallet.id}
-                delay={idx * 40}
-              >
-                <Card
-                  className="group relative transition duration-200 hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="inline-flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-900/30 dark:text-brand-300">
-                      <Icon size={24} strokeWidth={1.75} aria-hidden />
-                    </span>
-                    <div className="relative">
-                      <button
-                        type="button"
-                        aria-label={`Aksi untuk ${wallet.name}`}
-                        aria-expanded={menuId === wallet.id}
-                        onClick={() =>
-                          setMenuId((current) =>
-                            current === wallet.id ? null : wallet.id,
-                          )
-                        }
-                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] text-ink-soft transition duration-200 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                      >
-                        <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
-                      </button>
-                      {menuId === wallet.id ? (
-                        <div className="absolute right-0 top-full z-10 mt-1 min-w-36 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
-                          <button
-                            type="button"
-                            onClick={() => openEditForm(wallet)}
-                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                          >
-                            Ubah
-                          </button>
-                          <button
-                            type="button"
-                            disabled={!wallet.isActive}
-                            onClick={() => {
-                              setPendingAction({ wallet, action: 'archive' })
-                              setMenuId(null)
-                            }}
-                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                          >
-                            Arsipkan
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setPendingAction({ wallet, action: 'delete' })
-                              setMenuId(null)
-                            }}
-                            className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 transition hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                          >
-                            Hapus
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="max-w-full truncate text-base font-semibold text-ink">
-                      {wallet.name}
-                    </h2>
-                    {!wallet.isActive ? (
-                      <span className="rounded-full bg-muted px-2.5 py-0.5 text-[11px] font-medium text-ink-soft">
-                        Diarsipkan
-                      </span>
+          {wallets.map((wallet, idx) => (
+            <SectionMotion key={wallet.id} delay={idx * 40}>
+              <WalletCard
+                wallet={wallet}
+                size="full"
+                onClick={() => {}}
+                action={
+                  <div className="relative">
+                    <button
+                      type="button"
+                      aria-label={`Aksi untuk ${wallet.name}`}
+                      aria-expanded={menuId === wallet.id}
+                      onClick={() =>
+                        setMenuId((current) =>
+                          current === wallet.id ? null : wallet.id,
+                        )
+                      }
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-[var(--radius-control)] border border-white/25 bg-brand-900/25 text-white transition duration-200 hover:bg-brand-900/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring)]"
+                    >
+                      <MoreVertical size={20} strokeWidth={1.75} aria-hidden />
+                    </button>
+                    {menuId === wallet.id ? (
+                      <div className="absolute right-0 top-full z-10 mt-1 min-w-36 rounded-[var(--radius-control)] border border-line bg-card p-1 shadow-lg">
+                        <button
+                          type="button"
+                          onClick={() => openEditForm(wallet)}
+                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                        >
+                          Ubah
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!wallet.isActive}
+                          onClick={() => {
+                            setPendingAction({ wallet, action: 'archive' })
+                            setMenuId(null)
+                          }}
+                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-ink transition hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                        >
+                          Arsipkan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPendingAction({ wallet, action: 'delete' })
+                            setMenuId(null)
+                          }}
+                          className="min-h-11 w-full rounded-lg px-3 text-left text-sm text-danger-700 transition hover:bg-danger-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                        >
+                          Hapus
+                        </button>
+                      </div>
                     ) : null}
                   </div>
-                  <p className="mt-0.5 text-xs text-ink-soft capitalize">
-                    {walletTypeLabels[wallet.type]}
-                  </p>
-                  <p className="mt-3 tabular-nums text-lg font-bold text-ink tracking-tight">
-                    {formatRupiah(wallet.balance)}
-                  </p>
-                </div>
-              </Card>
+                }
+              />
             </SectionMotion>
-            )
-          })}
+          ))}
         </div>
       )}
 

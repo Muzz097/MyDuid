@@ -9,6 +9,7 @@ import {
   TransactionItem,
   useToast,
   SectionMotion,
+  WalletCard,
 } from '@/components/ui'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
 import { useCountUp } from '@/hooks/useCountUp'
@@ -17,7 +18,6 @@ import { useStore } from '@/lib/store'
 import type { DashboardData } from '@/types'
 import { DashboardGreetingHeader } from '@/features/dashboard/DashboardGreetingHeader'
 import { TotalAssetCard } from '@/features/dashboard/TotalAssetCard'
-import { WalletCardItem } from '@/features/dashboard/WalletCardItem'
 import { MonthlySummaryCards } from '@/features/dashboard/MonthlySummaryCards'
 import { CashFlowChart } from '@/features/dashboard/CashFlowChart'
 import { CategoryComposition } from '@/features/dashboard/CategoryComposition'
@@ -154,10 +154,12 @@ export function DashboardPage() {
         ) : (
           <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 pt-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {wallets.map((wallet) => (
-              <WalletCardItem
+              <WalletCard
                 key={wallet.id}
                 wallet={wallet}
+                size="compact"
                 hidden={balanceHidden}
+                onClick={() => {}}
               />
             ))}
           </div>
