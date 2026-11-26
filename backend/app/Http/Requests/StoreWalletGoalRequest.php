@@ -15,9 +15,9 @@ class StoreWalletGoalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'          => ['required', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:100'],
             'target_amount' => ['required', 'integer', 'min:1', 'max:9000000000000'],
-            'deadline'      => ['nullable', 'date_format:Y-m-d', 'after:today'],
+            'deadline' => ['nullable', 'date_format:Y-m-d', 'after:today'],
         ];
     }
 
@@ -28,8 +28,11 @@ class StoreWalletGoalRequest extends FormRequest
                 return;
             }
 
-            /** @var \App\Models\Wallet $wallet */
-            $wallet = $this->route('wallet');
+            $wallet = $this->user()->wallets()->find($this->route('wallet'));
+
+            if ($wallet === null) {
+                return;
+            }
 
             if ($wallet->group !== 'savings') {
                 $validator->errors()->add('wallet_id', 'Goal hanya dapat dibuat untuk dompet kelompok Tabungan.');
@@ -47,14 +50,14 @@ class StoreWalletGoalRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'          => 'Nama goal wajib diisi.',
-            'name.max'               => 'Nama goal maksimal 100 karakter.',
+            'name.required' => 'Nama goal wajib diisi.',
+            'name.max' => 'Nama goal maksimal 100 karakter.',
             'target_amount.required' => 'Target tabungan wajib diisi.',
-            'target_amount.integer'  => 'Target tabungan harus bilangan bulat Rupiah.',
-            'target_amount.min'      => 'Target tabungan harus lebih dari 0.',
-            'target_amount.max'      => 'Target tabungan terlalu besar.',
-            'deadline.date_format'   => 'Tenggat harus dalam format YYYY-MM-DD.',
-            'deadline.after'         => 'Tenggat harus setelah hari ini.',
+            'target_amount.integer' => 'Target tabungan harus bilangan bulat Rupiah.',
+            'target_amount.min' => 'Target tabungan harus lebih dari 0.',
+            'target_amount.max' => 'Target tabungan terlalu besar.',
+            'deadline.date_format' => 'Tenggat harus dalam format YYYY-MM-DD.',
+            'deadline.after' => 'Tenggat harus setelah hari ini.',
         ];
     }
 }

@@ -11,6 +11,7 @@ use App\Services\BalanceService;
 use App\Services\GoalProgressService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class WalletGoalController extends Controller
 {
@@ -40,18 +41,22 @@ class WalletGoalController extends Controller
 
     /**
      * GET /wallets/{wallet}/goal
-     * Tampilkan goal milik dompet, atau 404 jika belum ada.
+     * Tampilkan goal milik dompet, atau null jika belum ada.
      */
-    public function show(Request $request, string $wallet): WalletGoalResource
+    public function show(Request $request, string $wallet): JsonResponse
     {
-        $model  = $this->findWallet($request, $wallet);
+        $model = $this->findWallet($request, $wallet);
         $this->authorize('view', $model);
 
-        /** @var WalletGoal $goal */
-        $goal = $model->goal()->with('wallet:id,name,group')->firstOrFail();
+        $goal = $model->goal()->with('wallet:id,name,group')->first();
+
+        if ($goal === null) {
+            return response()->json(['data' => null]);
+        }
+
         $this->authorize('view', $goal);
 
-        return new WalletGoalResource($this->withProgress($goal, $model));
+        return (new WalletGoalResource($this->withProgress($goal, $model)))->response();
     }
 
     /**
@@ -64,10 +69,10 @@ class WalletGoalController extends Controller
         $this->authorize('update', $model); // memiliki dompet berarti bisa mengelola goal-nya
 
         /** @var WalletGoal $goal */
-        $goal = $request->user()->walletGoals()->create(array_merge(
-            $request->validated(),
-            ['wallet_id' => $model->id],
-        ));
+        $attributes = $request->validated();
+        $attributes['wallet_id'] = $model->id;
+        $attributes['starting_amount'] = $this->balances->forWallet($model);
+        $goal = $request->user()->walletGoals()->create($attributes);
 
         $goal->load('wallet:id,name,group');
 
@@ -97,7 +102,7 @@ class WalletGoalController extends Controller
      * DELETE /wallets/{wallet}/goal
      * Hapus goal.
      */
-    public function destroy(Request $request, string $wallet): \Illuminate\Http\Response
+    public function destroy(Request $request, string $wallet): Response
     {
         $model = $this->findWallet($request, $wallet);
         $this->authorize('update', $model);

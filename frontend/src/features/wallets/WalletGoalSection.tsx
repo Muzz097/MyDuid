@@ -36,6 +36,7 @@ export function WalletGoalSection({ wallet, onChanged }: WalletGoalSectionProps)
   const { show } = useToast()
   const [goal, setGoal] = useState<WalletGoal | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [formMode, setFormMode] = useState<'create' | 'edit' | null>(null)
   const [draft, setDraft] = useState<GoalDraft>(emptyDraft)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -45,13 +46,12 @@ export function WalletGoalSection({ wallet, onChanged }: WalletGoalSectionProps)
 
   const fetchGoal = useCallback(async () => {
     setLoading(true)
+    setLoadError(null)
     try {
-      const res = await api<{ data: WalletGoal }>(`/wallets/${wallet.id}/goal`)
+      const res = await api<{ data: WalletGoal | null }>(`/wallets/${wallet.id}/goal`)
       setGoal(res.data)
     } catch (err) {
-      if (err instanceof ApiError && err.status === 404) {
-        setGoal(null)
-      }
+      setLoadError(err instanceof Error ? err.message : 'Gagal memuat goal.')
     } finally {
       setLoading(false)
     }
@@ -82,10 +82,14 @@ export function WalletGoalSection({ wallet, onChanged }: WalletGoalSectionProps)
     const nextErrors: Record<string, string> = {}
     const trimmedName = draft.name.trim()
     const parsedTarget = Number(draft.target_amount)
+    const deadline = draft.deadline.trim()
 
     if (!trimmedName) nextErrors.name = 'Nama goal wajib diisi.'
     if (!Number.isInteger(parsedTarget) || parsedTarget < 1) {
       nextErrors.target_amount = 'Target tabungan harus bilangan bulat lebih dari 0.'
+    }
+    if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
+      nextErrors.deadline = 'Tenggat harus dalam format YYYY-MM-DD.'
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -99,7 +103,7 @@ export function WalletGoalSection({ wallet, onChanged }: WalletGoalSectionProps)
       const payload = {
         name: trimmedName,
         target_amount: parsedTarget,
-        deadline: draft.deadline.trim() ? draft.deadline.trim() : null,
+        deadline: deadline || null,
       }
 
       const res =
@@ -158,6 +162,17 @@ export function WalletGoalSection({ wallet, onChanged }: WalletGoalSectionProps)
 
   if (loading) {
     return <Skeleton className="h-24 w-full" rounded="card" />
+  }
+
+  if (loadError) {
+    return (
+      <section aria-label="Goal tabungan" className="space-y-2">
+        <p className="text-sm text-danger-500" role="alert">{loadError}</p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void fetchGoal()}>
+          Coba lagi
+        </Button>
+      </section>
+    )
   }
 
   if (formMode !== null) {

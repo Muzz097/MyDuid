@@ -12,21 +12,21 @@ beforeEach(function () {
 
     // Dompet Tabungan milik pengguna
     $this->savings = $this->u->wallets()->create([
-        'name'            => 'Dana Darurat',
-        'type'            => 'bank',
-        'group'           => 'savings',
+        'name' => 'Dana Darurat',
+        'type' => 'bank',
+        'group' => 'savings',
         'opening_balance' => 0,
-        'icon_type'       => 'preset',
-        'icon_key'        => 'bank',
+        'icon_type' => 'preset',
+        'icon_key' => 'bank',
     ]);
 
     // Dompet sehari-hari (bukan tabungan)
     $this->daily = $this->u->wallets()->create([
-        'name'      => 'Kas',
-        'type'      => 'cash',
-        'group'     => 'daily',
+        'name' => 'Kas',
+        'type' => 'cash',
+        'group' => 'daily',
         'icon_type' => 'preset',
-        'icon_key'  => 'cash',
+        'icon_key' => 'cash',
     ]);
 
     // Kategori untuk transaksi
@@ -38,7 +38,7 @@ beforeEach(function () {
 function goalBody(array $overrides = []): array
 {
     return array_merge([
-        'name'          => 'Dana Darurat',
+        'name' => 'Dana Darurat',
         'target_amount' => 10_000_000,
     ], $overrides);
 }
@@ -46,11 +46,11 @@ function goalBody(array $overrides = []): array
 function addIncome(object $test, int $amount, string $date = '2026-01-15'): void
 {
     $test->u->transactions()->create([
-        'wallet_id'        => $test->savings->id,
-        'category_id'      => $test->cat->id,
-        'type'             => 'income',
+        'wallet_id' => $test->savings->id,
+        'category_id' => $test->cat->id,
+        'type' => 'income',
         'transaction_date' => $date,
-        'amount'           => $amount,
+        'amount' => $amount,
     ]);
 }
 
@@ -79,7 +79,7 @@ it('membuat, menampilkan, mengubah, dan menghapus goal', function () {
 
     // PUT — ubah nama dan target
     $this->putJson("/api/wallets/{$walletId}/goal", [
-        'name'          => 'Liburan',
+        'name' => 'Liburan',
         'target_amount' => 5_000_000,
     ])
         ->assertOk()
@@ -89,8 +89,36 @@ it('membuat, menampilkan, mengubah, dan menghapus goal', function () {
     // DELETE — hapus goal
     $this->deleteJson("/api/wallets/{$walletId}/goal")->assertNoContent();
 
-    // GET setelah hapus — 404
-    $this->getJson("/api/wallets/{$walletId}/goal")->assertNotFound();
+    // GET setelah hapus — goal kosong sebagai data null.
+    $this->getJson("/api/wallets/{$walletId}/goal")
+        ->assertOk()
+        ->assertJsonPath('data', null);
+});
+
+it('menyimpan saldo saat ini dan pemilik dari pengguna yang terautentikasi', function () {
+    $this->actingAs($this->u);
+    $other = User::factory()->create();
+    addIncome($this, 350_000);
+
+    $this->postJson("/api/wallets/{$this->savings->id}/goal", goalBody([
+        'user_id' => $other->id,
+        'starting_amount' => 999_999,
+        'deadline' => now()->addWeek()->toDateString(),
+    ]))
+        ->assertCreated()
+        ->assertJsonPath('data.starting_amount', 350_000)
+        ->assertJsonPath('data.deadline', now()->addWeek()->toDateString());
+
+    expect($this->u->walletGoals()->firstOrFail()->user_id)->toBe($this->u->id)
+        ->and($other->walletGoals()->exists())->toBeFalse();
+});
+
+it('mengembalikan data null saat dompet belum memiliki goal', function () {
+    $this->actingAs($this->u);
+
+    $this->getJson("/api/wallets/{$this->savings->id}/goal")
+        ->assertOk()
+        ->assertExactJson(['data' => null]);
 });
 
 // ─── Progres & persentase ──────────────────────────────────────────────────
@@ -134,8 +162,8 @@ it('menggunakan floor untuk persentase (bukan round atau ceil)', function () {
 
     // 1 Rp dari target 3 Rp → floor(1*100/3) = 33
     $this->u->walletGoals()->create([
-        'wallet_id'     => $walletId,
-        'name'          => 'Test',
+        'wallet_id' => $walletId,
+        'name' => 'Test',
         'target_amount' => 3,
     ]);
     addIncome($this, 1, '2026-01-01');
@@ -167,11 +195,11 @@ it('menandai completed_at ketika target tercapai', function () {
 
 it('menghapus completed_at ketika saldo turun di bawah target', function () {
     $this->actingAs($this->u);
-    $walletId   = $this->savings->id;
+    $walletId = $this->savings->id;
     $categoryId = $this->cat->id;
 
     $this->u->walletGoals()->create(array_merge(goalBody(), [
-        'wallet_id'    => $walletId,
+        'wallet_id' => $walletId,
         'completed_at' => now(),
     ]));
 
@@ -181,11 +209,11 @@ it('menghapus completed_at ketika saldo turun di bawah target', function () {
     // Tambah pengeluaran agar saldo turun
     $expCat = $this->u->categories()->create(['name' => 'Belanja', 'type' => 'expense']);
     $this->u->transactions()->create([
-        'wallet_id'        => $walletId,
-        'category_id'      => $expCat->id,
-        'type'             => 'expense',
+        'wallet_id' => $walletId,
+        'category_id' => $expCat->id,
+        'type' => 'expense',
         'transaction_date' => '2026-02-01',
-        'amount'           => 1_000_000,
+        'amount' => 1_000_000,
     ]);
 
     $data = $this->getJson("/api/wallets/{$walletId}/goal")->assertOk()->json('data');
@@ -202,10 +230,10 @@ it('mengembalikan deadline_info dengan estimasi setoran bila deadline belum lewa
 
     // Deadline 14 hari ke depan (2 minggu), sisa 10 juta
     $this->u->walletGoals()->create([
-        'wallet_id'     => $walletId,
-        'name'          => 'Liburan',
+        'wallet_id' => $walletId,
+        'name' => 'Liburan',
         'target_amount' => 10_000_000,
-        'deadline'      => '2026-01-15',
+        'deadline' => '2026-01-15',
     ]);
 
     $info = $this->getJson("/api/wallets/{$walletId}/goal")->assertOk()->json('data.deadline_info');
@@ -222,10 +250,10 @@ it('mengembalikan status tenggat terlewat tanpa estimasi bila deadline sudah lew
     $walletId = $this->savings->id;
 
     $this->u->walletGoals()->create([
-        'wallet_id'     => $walletId,
-        'name'          => 'Liburan',
+        'wallet_id' => $walletId,
+        'name' => 'Liburan',
         'target_amount' => 10_000_000,
-        'deadline'      => '2026-01-01', // sudah lewat
+        'deadline' => '2026-01-01', // sudah lewat
     ]);
 
     $info = $this->getJson("/api/wallets/{$walletId}/goal")->assertOk()->json('data.deadline_info');
@@ -243,10 +271,10 @@ it('menghitung estimasi setoran dengan integer ceil tanpa float', function () {
     $walletId = $this->savings->id;
 
     $this->u->walletGoals()->create([
-        'wallet_id'     => $walletId,
-        'name'          => 'Test',
+        'wallet_id' => $walletId,
+        'name' => 'Test',
         'target_amount' => 10,
-        'deadline'      => '2026-01-22', // 21 hari = 3 minggu tepat
+        'deadline' => '2026-01-22', // 21 hari = 3 minggu tepat
     ]);
 
     $info = $this->getJson("/api/wallets/{$walletId}/goal")->assertOk()->json('data.deadline_info');
@@ -261,10 +289,10 @@ it('menggunakan minimum 1 minggu bila tenggat kurang dari 7 hari', function () {
     $walletId = $this->savings->id;
 
     $this->u->walletGoals()->create([
-        'wallet_id'     => $walletId,
-        'name'          => 'Kilat',
+        'wallet_id' => $walletId,
+        'name' => 'Kilat',
         'target_amount' => 700_000,
-        'deadline'      => '2026-01-04', // 3 hari lagi (< 7 hari) -> 1 minggu
+        'deadline' => '2026-01-04', // 3 hari lagi (< 7 hari) -> 1 minggu
     ]);
 
     $info = $this->getJson("/api/wallets/{$walletId}/goal")->assertOk()->json('data.deadline_info');
@@ -282,10 +310,10 @@ it('tidak memberi estimasi bila goal sudah tercapai walau ada deadline', functio
     addIncome($this, 20_000_000); // melampaui target
 
     $this->u->walletGoals()->create([
-        'wallet_id'     => $walletId,
-        'name'          => 'Test',
+        'wallet_id' => $walletId,
+        'name' => 'Test',
         'target_amount' => 10_000_000,
-        'deadline'      => '2026-12-31',
+        'deadline' => '2026-12-31',
     ]);
 
     $data = $this->getJson("/api/wallets/{$walletId}/goal")->assertOk()->json('data');
@@ -318,13 +346,13 @@ it('menolak dua goal untuk dompet yang sama', function () {
 // ─── Isolasi data antar pengguna ──────────────────────────────────────────
 
 it('mengembalikan 404 untuk dompet atau goal milik pengguna lain', function () {
-    $other        = User::factory()->create();
-    $otherWallet  = $other->wallets()->create([
-        'name'      => 'Lain',
-        'type'      => 'bank',
-        'group'     => 'savings',
+    $other = User::factory()->create();
+    $otherWallet = $other->wallets()->create([
+        'name' => 'Lain',
+        'type' => 'bank',
+        'group' => 'savings',
         'icon_type' => 'preset',
-        'icon_key'  => 'bank',
+        'icon_key' => 'bank',
     ]);
     $other->walletGoals()->create(array_merge(goalBody(), ['wallet_id' => $otherWallet->id]));
 
@@ -359,6 +387,14 @@ it('menolak deadline yang sudah lewat saat membuat atau mengubah goal', function
 
     $this->putJson("/api/wallets/{$walletId}/goal", ['deadline' => '2020-01-01'])
         ->assertUnprocessable()->assertJsonValidationErrors('deadline');
+});
+
+it('menolak format deadline yang tidak valid', function () {
+    $this->actingAs($this->u);
+
+    $this->postJson("/api/wallets/{$this->savings->id}/goal", goalBody(['deadline' => '30/11/2026']))
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('deadline');
 });
 
 it('memerlukan login untuk API goal', function () {

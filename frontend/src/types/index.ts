@@ -25,6 +25,7 @@ export interface WalletGoal {
   wallet_id: number
   name: string
   target_amount: number
+  starting_amount: number
   deadline: string | null
   completed_at: string | null
   balance: number
