@@ -71,7 +71,7 @@ export const DEFAULT_FILTERS: TransactionFilters = {
 
 // ---- API shapes --------------------------------------------------------
 
-type ApiTransaction = {
+export type ApiTransaction = {
   id: number
   wallet_id: number
   category_id: number
@@ -79,6 +79,8 @@ type ApiTransaction = {
   amount: number
   transaction_date: string
   notes: string | null
+  created_at?: string | null
+  updated_at?: string | null
   wallet?: { id: number; name: string } | null
   category?: { id: number; name: string; icon_key: string } | null
 }
@@ -118,6 +120,8 @@ export type FetchedTransaction = {
   amount: number
   date: string
   notes?: string
+  createdAt?: string | null
+  updatedAt?: string | null
   wallet?: { id: number; name: string } | null
   category?: { id: number; name: string; iconKey: string } | null
 }
@@ -153,6 +157,7 @@ export type TransactionQueryResult = {
   hasMore: boolean
   page: number
   loadMore: () => void
+  refetch: () => Promise<void>
   reset: () => void
 }
 
@@ -219,7 +224,7 @@ export function resolveDateRange(filters: TransactionFilters): { from: string; t
 
 // ---- Mapping -----------------------------------------------------------
 
-function mapTransaction(t: ApiTransaction): FetchedTransaction {
+export function mapTransaction(t: ApiTransaction): FetchedTransaction {
   return {
     id: t.id,
     walletId: t.wallet_id,
@@ -228,6 +233,8 @@ function mapTransaction(t: ApiTransaction): FetchedTransaction {
     amount: t.amount,
     date: t.transaction_date,
     notes: t.notes ?? undefined,
+    createdAt: t.created_at ?? null,
+    updatedAt: t.updated_at ?? null,
     wallet: t.wallet ?? null,
     category: t.category
       ? { id: t.category.id, name: t.category.name, iconKey: t.category.icon_key }
@@ -412,6 +419,11 @@ export function useTransactionQuery(filters: TransactionFilters): TransactionQue
     }
   }, [meta, page, loadingMore, fetchPage])
 
+  const refetch = useCallback(async () => {
+    setPage(1)
+    await fetchPage(1, false)
+  }, [fetchPage])
+
   const reset = useCallback(() => {
     setPage(1)
     setTransactions([])
@@ -436,6 +448,7 @@ export function useTransactionQuery(filters: TransactionFilters): TransactionQue
     hasMore,
     page,
     loadMore,
+    refetch,
     reset,
   }
 }

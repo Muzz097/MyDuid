@@ -24,6 +24,7 @@ import {
 } from '@/components/ui'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { useAddTransaction } from '@/features/transactions/AddTransactionContext'
+import { TransactionDetailPanel } from '@/features/transactions/TransactionDetailPanel'
 import { TransactionFilterBar } from '@/features/transactions/TransactionFilterBar'
 import { TransactionSummaryBar } from '@/features/transactions/TransactionSummaryBar'
 import {
@@ -152,10 +153,12 @@ function TransactionSkeletonGroup() {
 // ---- Main page component ----------------------------------------------
 
 export function TransactionsPage() {
-  const { categories, wallets } = useStore()
+  const { categories, wallets, refresh } = useStore()
   const { openAddTransaction } = useAddTransaction()
 
   const [filters, setFilters] = useState<TransactionFilters>(DEFAULT_FILTERS)
+  const [selectedTransaction, setSelectedTransaction] =
+    useState<FetchedTransaction | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const {
@@ -168,6 +171,7 @@ export function TransactionsPage() {
     error,
     hasMore,
     loadMore,
+    refetch,
   } = useTransactionQuery(filters)
 
   const categoryById = new Map(categories.map((c) => [c.id, c]))
@@ -218,7 +222,7 @@ export function TransactionsPage() {
           <Button
             size="sm"
             variant="primary"
-            onClick={() => openAddTransaction()}
+            onClick={() => openAddTransaction({ onSaved: () => void refetch() })}
           >
             + Catat
           </Button>
@@ -292,7 +296,7 @@ export function TransactionsPage() {
               description="Catat pemasukan atau pengeluaran harian Anda untuk mulai melacak arus uang."
               action={{
                 label: 'Catat transaksi pertama',
-                onClick: () => openAddTransaction(),
+                onClick: () => openAddTransaction({ onSaved: () => void refetch() }),
               }}
             />
           )}
@@ -335,6 +339,7 @@ export function TransactionsPage() {
                           transaction={tx}
                           category={category}
                           wallet={wallet}
+                          onClick={() => setSelectedTransaction(tx)}
                         />
                       )
                     })}
@@ -380,6 +385,25 @@ export function TransactionsPage() {
           Semua {meta.total} transaksi telah dimuat
         </p>
       )}
+
+      {/* Transaction detail & edit panel */}
+      <TransactionDetailPanel
+        transaction={selectedTransaction}
+        wallets={wallets}
+        categories={categories}
+        onClose={() => setSelectedTransaction(null)}
+        onUpdated={async (updated) => {
+          setSelectedTransaction(updated)
+          await Promise.all([refresh(), refetch()])
+        }}
+        onDeleted={async () => {
+          setSelectedTransaction(null)
+          await Promise.all([refresh(), refetch()])
+        }}
+        onRestored={async () => {
+          await Promise.all([refresh(), refetch()])
+        }}
+      />
     </div>
   )
 }

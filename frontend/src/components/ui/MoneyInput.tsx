@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes } from 'react'
+import { useId, type InputHTMLAttributes, type Ref } from 'react'
 import { cn } from '@/lib/cn'
 import { formatRupiahInput, parseRupiah } from '@/lib/money'
 
@@ -6,6 +6,7 @@ type MoneyInputProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'value' | 'onChange' | 'type' | 'inputMode'
 > & {
+  ref?: Ref<HTMLInputElement>
   label?: string
   helperText?: string
   error?: string
@@ -14,6 +15,7 @@ type MoneyInputProps = Omit<
 }
 
 export function MoneyInput({
+  ref,
   label,
   helperText,
   error,
@@ -49,6 +51,7 @@ export function MoneyInput({
         </span>
         <input
           {...props}
+          ref={ref}
           id={inputId}
           type="text"
           inputMode="numeric"

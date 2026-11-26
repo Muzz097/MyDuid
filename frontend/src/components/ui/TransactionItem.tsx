@@ -15,6 +15,7 @@ export type TransactionItemProps = {
   wallet?: Wallet | null
   hidden?: boolean
   action?: ReactNode
+  onClick?: () => void
   className?: string
   compact?: boolean
 }
@@ -25,6 +26,7 @@ export function TransactionItem({
   wallet,
   hidden = false,
   action,
+  onClick,
   className,
   compact = false,
 }: TransactionItemProps) {
@@ -37,14 +39,8 @@ export function TransactionItem({
     ? 'bg-income-50 text-income-600 dark:bg-income-950/40 dark:text-income-400'
     : 'bg-expense-50 text-expense-500 dark:bg-expense-950/40 dark:text-expense-400'
 
-  return (
-    <div
-      className={cn(
-        'group flex min-h-12 items-center gap-3 transition-colors duration-150',
-        compact ? 'py-2.5' : 'py-3.5',
-        className,
-      )}
-    >
+  const content = (
+    <>
       <span
         className={cn(
           'inline-flex size-10 shrink-0 items-center justify-center rounded-xl transition duration-150 group-hover:scale-105',
@@ -81,6 +77,36 @@ export function TransactionItem({
         />
         {action}
       </div>
+    </>
+  )
+
+  if (onClick && !action) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          'group flex min-h-12 w-full items-center gap-3 text-left transition-colors duration-150',
+          'hover:bg-muted/40 active:bg-muted/60',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400',
+          compact ? 'py-2.5' : 'py-3.5',
+          className,
+        )}
+      >
+        {content}
+      </button>
+    )
+  }
+
+  return (
+    <div
+      className={cn(
+        'group flex min-h-12 items-center gap-3 transition-colors duration-150',
+        compact ? 'py-2.5' : 'py-3.5',
+        className,
+      )}
+    >
+      {content}
     </div>
   )
 }
