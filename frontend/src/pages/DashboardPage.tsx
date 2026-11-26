@@ -15,6 +15,8 @@ import { useAddTransaction } from '@/features/transactions/AddTransactionContext
 import { AddWalletCard } from '@/features/wallets/AddWalletCard'
 import { useWalletDetail } from '@/features/wallets/useWalletDetail'
 import { useCountUp } from '@/hooks/useCountUp'
+import { useDragScroll } from '@/hooks/useDragScroll'
+import { cn } from '@/lib/cn'
 import { ApiError, api } from '@/lib/api'
 import { useStore } from '@/lib/store'
 import type { DashboardData } from '@/types'
@@ -39,6 +41,7 @@ export function DashboardPage() {
   const { openWallet } = useWalletDetail()
   const { show } = useToast()
   const { wallets: storeWallets, version } = useStore()
+  const { ref: carouselRef, isDragging, dragProps } = useDragScroll<HTMLDivElement>()
 
   const [balanceHidden, setBalanceHidden] = useState(false)
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
@@ -156,7 +159,16 @@ export function DashboardPage() {
             </Link>
           </Card>
         ) : (
-          <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 pt-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div
+            ref={carouselRef}
+            {...dragProps}
+            className={cn(
+              'flex gap-3 overflow-x-auto pb-2 pt-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+              isDragging
+                ? 'cursor-grabbing select-none snap-none'
+                : 'cursor-grab snap-x snap-mandatory',
+            )}
+          >
             {wallets.map((wallet) => (
               <WalletCard
                 key={wallet.id}

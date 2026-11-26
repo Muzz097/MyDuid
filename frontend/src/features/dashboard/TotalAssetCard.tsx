@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Eye, EyeOff, Wallet as WalletIcon, ArrowRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Eye, EyeOff, Wallet as WalletIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { IconButton } from '@/components/ui/IconButton'
 import { MoneyText } from '@/components/ui/MoneyText'
@@ -138,18 +137,6 @@ export function TotalAssetCard({
               ? `${walletCount} dompet terhubung`
               : 'Belum ada dompet aktif'}
           </span>
-          <Link
-            to="/dompet"
-            className="group inline-flex items-center gap-1.5 rounded-[var(--radius-control)] px-2.5 py-1 text-xs font-semibold text-brand-600 transition hover:bg-brand-50/50 hover:text-brand-700 dark:text-brand-400 dark:hover:bg-brand-900/30"
-          >
-            <span>Lihat rincian dompet</span>
-            <ArrowRight
-              size={13}
-              strokeWidth={2}
-              className="transition-transform duration-200 group-hover:translate-x-0.5"
-              aria-hidden
-            />
-          </Link>
         </div>
       </div>
     </Card>

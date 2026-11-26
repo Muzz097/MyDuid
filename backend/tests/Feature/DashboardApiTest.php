@@ -184,3 +184,36 @@ it('memerlukan login dan memvalidasi parameter bulan', function () {
             ->assertJsonValidationErrors('month');
     }
 });
+
+it('menyertakan metadata visual dan has_card_image pada daftar dompet dashboard', function () {
+    $u = User::factory()->create();
+    $u->wallets()->create([
+        'name' => 'Dompet Foto',
+        'type' => 'bank',
+        'opening_balance' => 250000,
+        'card_theme' => 'ocean',
+        'icon_type' => 'preset',
+        'icon_key' => 'bank',
+        'card_image_path' => 'wallet-cards/1/test.webp',
+    ]);
+    $u->wallets()->create([
+        'name' => 'Dompet Polos',
+        'type' => 'cash',
+        'opening_balance' => 50000,
+    ]);
+
+    $wallets = collect($this->actingAs($u)->getJson('/api/dashboard?month=2026-11')->assertOk()->json('data.wallets'));
+
+    $withPhoto = $wallets->firstWhere('name', 'Dompet Foto');
+    $plain = $wallets->firstWhere('name', 'Dompet Polos');
+
+    expect($withPhoto)->toMatchArray([
+        'card_theme' => 'ocean',
+        'icon_type' => 'preset',
+        'icon_key' => 'bank',
+        'has_card_image' => true,
+    ])->and($plain)->toMatchArray([
+        'card_theme' => 'default',
+        'has_card_image' => false,
+    ]);
+});

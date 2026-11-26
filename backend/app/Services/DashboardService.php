@@ -69,7 +69,9 @@ class DashboardService
             'wallets' => $wallets->map(fn ($w) => [
                 'id' => $w->id, 'name' => $w->name, 'type' => $w->type,
                 'group' => $w->group, 'card_theme' => $w->card_theme ?? 'default',
-                'icon_type' => $w->icon_type, 'icon_key' => $w->icon_key, 'balance' => $map[$w->id],
+                'icon_type' => $w->icon_type, 'icon_key' => $w->icon_key,
+                'has_card_image' => (bool) $w->card_image_path,
+                'balance' => $map[$w->id],
             ])->all(),
             'daily_cash_flow' => $dailyCashFlow,
             'income_by_category' => $this->byCategory($user, 'income', $range),

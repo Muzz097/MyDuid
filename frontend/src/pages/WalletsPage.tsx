@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { MoreVertical, Plus } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
+import { AssetOverviewCard } from '@/components/ui/AssetOverviewCard'
 import { Button } from '@/components/ui/Button'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -95,6 +96,7 @@ export function WalletsPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [menuId, setMenuId] = useState<number | null>(null)
+  const [balanceHidden, setBalanceHidden] = useState(false)
   const [pendingAction, setPendingAction] = useState<{
     wallet: WalletRecord
     action: WalletAction
@@ -224,29 +226,22 @@ export function WalletsPage() {
           {/* Ringkasan total aset */}
           {wallets.length > 0 ? (
             <SectionMotion delay={0}>
-              <div className="rounded-[var(--radius-card)] border border-line bg-card p-4 shadow-xs">
-                <div className="mb-3 flex items-baseline justify-between">
-                  <p className="text-sm font-semibold text-ink">Total Aset</p>
-                  <p className="tabular-nums text-lg font-extrabold text-ink">
-                    {formatRupiah(totalAsset)}
-                  </p>
-                </div>
-                <div className="space-y-1.5">
-                  {groupedWallets.map((g) =>
-                    g.items.length > 0 ? (
-                      <div
-                        key={g.value}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <span className="text-ink-soft">{g.label}</span>
-                        <span className="tabular-nums font-medium text-ink">
-                          {formatRupiah(g.subtotal)}
-                        </span>
-                      </div>
-                    ) : null,
-                  )}
-                </div>
-              </div>
+              <AssetOverviewCard
+                totalBalance={totalAsset}
+                groups={{
+                  daily: groupedWallets.find((g) => g.value === 'daily')?.subtotal ?? 0,
+                  savings: groupedWallets.find((g) => g.value === 'savings')?.subtotal ?? 0,
+                  investment: groupedWallets.find((g) => g.value === 'investment')?.subtotal ?? 0,
+                }}
+                balanceHidden={balanceHidden}
+                onToggleHide={() => setBalanceHidden((v) => !v)}
+                onGroupClick={(group) => {
+                  const target = document.getElementById(`wallet-group-${group}`)
+                  if (!target) return
+                  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                  target.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
+                }}
+              />
             </SectionMotion>
           ) : null}
 
@@ -258,7 +253,7 @@ export function WalletsPage() {
               if (!showSection) return null
 
               return (
-                <div key={g.value}>
+                <div key={g.value} id={`wallet-group-${g.value}`} className="scroll-mt-20">
                   <div className="mb-3 flex items-center justify-between">
                     <h2 className="text-sm font-semibold text-ink">{g.label}</h2>
                     {g.items.length > 0 ? (
