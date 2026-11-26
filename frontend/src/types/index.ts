@@ -54,6 +54,7 @@ export interface Category {
   name: string
   type: TransactionType
   iconKey: string
+  isActive?: boolean
 }
 
 export interface Transaction {

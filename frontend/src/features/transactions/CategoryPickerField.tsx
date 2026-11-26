@@ -38,7 +38,7 @@ export function CategoryPickerField({
   const [emojiVersion, setEmojiVersion] = useState(0)
 
   const typedCategories = useMemo(
-    () => categories.filter((c) => c.type === type),
+    () => categories.filter((c) => c.type === type && c.isActive !== false),
     [categories, type],
   )
 

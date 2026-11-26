@@ -108,14 +108,18 @@ export function AddTransactionSheet({
     }
 
     const lastCategory = readStoredId(LAST_CATEGORY_KEY)
-    const availableCats = categories.filter((c) => c.type === initialType)
+    const availableCats = categories.filter(
+      (c) => c.type === initialType && c.isActive !== false,
+    )
     const category =
       availableCats.find((c) => c.id === lastCategory) ?? availableCats[0] ?? null
     setCategoryId(category?.id ?? null)
   }, [open, initialType, initialDate, initialWalletId, activeWallets, categories])
 
   useEffect(() => {
-    const available = categories.filter((c) => c.type === type)
+    const available = categories.filter(
+      (c) => c.type === type && c.isActive !== false,
+    )
     if (available.length === 0) {
       setCategoryId(null)
       return

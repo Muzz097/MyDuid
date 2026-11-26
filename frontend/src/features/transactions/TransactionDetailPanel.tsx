@@ -397,11 +397,11 @@ export function TransactionDetailPanel({
         title={isEditing ? 'Ubah Transaksi' : 'Detail Transaksi'}
       >
         {transaction && !isEditing && (
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5 pb-2">
             {/* Hero summary card */}
-            <div className="rounded-[var(--radius-card)] border border-line/70 bg-muted/40 p-4">
+            <div className="rounded-[var(--radius-card)] border border-line/80 bg-muted/35 p-5 shadow-xs">
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3.5">
                   <CategoryAvatar
                     categoryId={resolvedCategory?.id}
                     name={resolvedCategory?.name}
@@ -412,7 +412,7 @@ export function TransactionDetailPanel({
                   <div className="min-w-0">
                     <span
                       className={cn(
-                        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+                        'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide',
                         transaction.type === 'income'
                           ? 'bg-income-50 text-income-600 dark:bg-income-950/50 dark:text-income-400'
                           : 'bg-expense-50 text-expense-500 dark:bg-expense-950/50 dark:text-expense-400',
@@ -425,71 +425,91 @@ export function TransactionDetailPanel({
                       )}
                       {transaction.type === 'income' ? 'Pemasukan' : 'Pengeluaran'}
                     </span>
-                    <p className="mt-1 truncate text-sm font-medium text-ink">
+                    <p className="mt-1.5 truncate text-base font-semibold tracking-tight text-ink">
                       {resolvedCategory?.name ?? 'Kategori'}
                     </p>
                   </div>
                 </div>
 
-                <IconButton
-                  label="Ubah transaksi"
-                  icon={<Pencil size={18} strokeWidth={1.9} aria-hidden />}
-                  variant="ghost"
-                  size="md"
-                  onClick={enterEditMode}
-                />
+                <div className="flex shrink-0 items-center gap-1">
+                  <IconButton
+                    label="Ubah transaksi"
+                    icon={<Pencil size={17} strokeWidth={1.9} aria-hidden />}
+                    variant="ghost"
+                    size="md"
+                    onClick={enterEditMode}
+                  />
+                  <IconButton
+                    label="Hapus transaksi"
+                    icon={<Trash2 size={17} strokeWidth={1.9} aria-hidden />}
+                    variant="ghost"
+                    size="md"
+                    onClick={() => setConfirmDeleteOpen(true)}
+                    className="text-danger-500 hover:bg-danger-100/60 hover:text-danger-700 dark:hover:bg-danger-950/40 dark:hover:text-danger-400"
+                  />
+                </div>
               </div>
 
-              <div className="mt-4 border-t border-line/60 pt-3">
-                <p className="text-xs text-ink-soft">Nominal</p>
+              <div className="mt-5 border-t border-line/60 pt-4">
+                <p className="text-xs font-medium uppercase tracking-wider text-ink-soft">
+                  Nominal
+                </p>
                 <MoneyText
                   amount={transaction.amount}
                   type={transaction.type}
-                  className="mt-0.5 block text-2xl font-bold tracking-tight tabular-nums"
+                  className="mt-1 block text-3xl font-bold tracking-tight tabular-nums"
                 />
               </div>
             </div>
 
             {/* Structured read-only details */}
             <dl className="divide-y divide-line/60 rounded-[var(--radius-card)] border border-line/70 bg-card px-4">
-              <div className="flex items-center justify-between gap-4 py-3.5">
-                <dt className="flex items-center gap-2 text-xs font-medium text-ink-soft">
-                  <Tag size={15} strokeWidth={1.75} aria-hidden />
+              <div className="flex items-center justify-between gap-4 py-4">
+                <dt className="flex items-center gap-2.5 text-xs font-medium text-ink-soft">
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-muted/70 text-ink-soft">
+                    <Tag size={14} strokeWidth={1.85} aria-hidden />
+                  </span>
                   Kategori
                 </dt>
-                <dd className="text-right text-sm font-medium text-ink">
+                <dd className="text-right text-sm font-semibold text-ink">
                   {resolvedCategory?.name ?? 'Tidak diketahui'}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-4 py-3.5">
-                <dt className="flex items-center gap-2 text-xs font-medium text-ink-soft">
-                  <WalletIconLucide size={15} strokeWidth={1.75} aria-hidden />
+              <div className="flex items-center justify-between gap-4 py-4">
+                <dt className="flex items-center gap-2.5 text-xs font-medium text-ink-soft">
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-muted/70 text-ink-soft">
+                    <WalletIconLucide size={14} strokeWidth={1.85} aria-hidden />
+                  </span>
                   Dompet
                 </dt>
-                <dd className="text-right text-sm font-medium text-ink">
+                <dd className="text-right text-sm font-semibold text-ink">
                   {resolvedWallet?.name ?? 'Tidak diketahui'}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-4 py-3.5">
-                <dt className="flex items-center gap-2 text-xs font-medium text-ink-soft">
-                  <Calendar size={15} strokeWidth={1.75} aria-hidden />
+              <div className="flex items-center justify-between gap-4 py-4">
+                <dt className="flex items-center gap-2.5 text-xs font-medium text-ink-soft">
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-muted/70 text-ink-soft">
+                    <Calendar size={14} strokeWidth={1.85} aria-hidden />
+                  </span>
                   Tanggal
                 </dt>
-                <dd className="text-right text-sm font-medium text-ink">
+                <dd className="text-right text-sm font-semibold text-ink">
                   {formatFullDate(transaction.date)}
                 </dd>
               </div>
 
-              <div className="flex flex-col gap-1.5 py-3.5">
-                <dt className="flex items-center gap-2 text-xs font-medium text-ink-soft">
-                  <FileText size={15} strokeWidth={1.75} aria-hidden />
+              <div className="flex flex-col gap-2 py-4">
+                <dt className="flex items-center gap-2.5 text-xs font-medium text-ink-soft">
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-muted/70 text-ink-soft">
+                    <FileText size={14} strokeWidth={1.85} aria-hidden />
+                  </span>
                   Catatan
                 </dt>
                 <dd
                   className={cn(
-                    'text-sm leading-relaxed break-words',
+                    'rounded-[var(--radius-control)] bg-muted/35 px-3.5 py-2.5 text-sm leading-relaxed break-words',
                     transaction.notes?.trim()
                       ? 'text-ink'
                       : 'italic text-ink-soft/75',
@@ -500,8 +520,10 @@ export function TransactionDetailPanel({
               </div>
 
               <div className="flex items-center justify-between gap-4 py-3.5">
-                <dt className="flex items-center gap-2 text-xs font-medium text-ink-soft">
-                  <Hash size={15} strokeWidth={1.75} aria-hidden />
+                <dt className="flex items-center gap-2.5 text-xs font-medium text-ink-soft">
+                  <span className="inline-flex size-7 items-center justify-center rounded-lg bg-muted/70 text-ink-soft">
+                    <Hash size={14} strokeWidth={1.85} aria-hidden />
+                  </span>
                   ID Transaksi
                 </dt>
                 <dd className="text-right text-xs font-medium tabular-nums text-ink-soft">
@@ -511,8 +533,10 @@ export function TransactionDetailPanel({
 
               {createdAtLabel && (
                 <div className="flex items-center justify-between gap-4 py-3.5">
-                  <dt className="flex items-center gap-2 text-xs font-medium text-ink-soft">
-                    <Clock size={15} strokeWidth={1.75} aria-hidden />
+                  <dt className="flex items-center gap-2.5 text-xs font-medium text-ink-soft">
+                    <span className="inline-flex size-7 items-center justify-center rounded-lg bg-muted/70 text-ink-soft">
+                      <Clock size={14} strokeWidth={1.85} aria-hidden />
+                    </span>
                     Dicatat pada
                   </dt>
                   <dd className="text-right text-xs font-medium tabular-nums text-ink-soft">
@@ -521,29 +545,6 @@ export function TransactionDetailPanel({
                 </div>
               )}
             </dl>
-
-            {/* Footer actions */}
-            <div className="flex items-center justify-between gap-3 pt-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="md"
-                onClick={() => setConfirmDeleteOpen(true)}
-                className="text-danger-500 hover:bg-danger-100/50 hover:text-danger-700 dark:hover:bg-danger-950/30 dark:hover:text-danger-400"
-              >
-                <Trash2 size={16} strokeWidth={1.9} aria-hidden />
-                Hapus
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                size="md"
-                onClick={enterEditMode}
-              >
-                <Pencil size={16} strokeWidth={1.9} aria-hidden />
-                Ubah
-              </Button>
-            </div>
           </div>
         )}
 

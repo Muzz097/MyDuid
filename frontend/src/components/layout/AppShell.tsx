@@ -8,6 +8,7 @@ import {
   PiggyBank,
   Plus,
   Receipt,
+  Tag,
   Wallet,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -53,6 +54,7 @@ const sidebarGroups: NavGroup[] = [
     items: [
       { to: '/transaksi', label: 'Transaksi', icon: Receipt },
       { to: '/dompet', label: 'Dompet', icon: Wallet },
+      { to: '/kategori', label: 'Kategori', icon: Tag },
     ],
   },
   {
@@ -98,6 +100,8 @@ function getPageMeta(pathname: string): { title: string; subtitle: string } {
       return { title: 'Dompet', subtitle: 'Atur rekening dan sumber dana' }
     case '/anggaran':
       return { title: 'Anggaran', subtitle: 'Pantau batas pengeluaran bulanan' }
+    case '/kategori':
+      return { title: 'Kategori', subtitle: 'Kelola kategori pemasukan dan pengeluaran' }
     case '/lainnya':
       return { title: 'Lainnya', subtitle: 'Pengaturan akun dan preferensi' }
     default:

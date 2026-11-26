@@ -1,4 +1,4 @@
-import { ArrowRight, Calendar, LogOut, Wallet } from 'lucide-react'
+import { ArrowRight, Calendar, LogOut, Tag, Wallet } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -46,6 +46,15 @@ export function MorePage() {
           >
             <Wallet size={20} strokeWidth={1.75} className="text-brand-600 dark:text-brand-400" aria-hidden />
             <span className="flex-1 font-medium">Dompet & Rekening</span>
+            <ArrowRight size={18} strokeWidth={1.75} aria-hidden />
+          </Link>
+
+          <Link
+            to="/kategori"
+            className="flex min-h-14 items-center gap-3 rounded-[var(--radius-control)] border border-line bg-card px-4 text-ink transition duration-200 hover:bg-muted active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+          >
+            <Tag size={20} strokeWidth={1.75} className="text-brand-600 dark:text-brand-400" aria-hidden />
+            <span className="flex-1 font-medium">Kategori Transaksi</span>
             <ArrowRight size={18} strokeWidth={1.75} aria-hidden />
           </Link>
         </div>

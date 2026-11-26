@@ -39,6 +39,7 @@ type ApiCategory = {
   name: string
   type: TransactionType
   icon_key: string
+  is_active?: boolean
 }
 
 type ApiTransaction = {
@@ -89,6 +90,7 @@ function mapCategory(c: ApiCategory): Category {
     name: c.name,
     type: c.type,
     iconKey: c.icon_key,
+    isActive: c.is_active,
   }
 }
 
