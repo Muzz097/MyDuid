@@ -24,29 +24,72 @@ class TransactionController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'month' => ['nullable', 'date_format:Y-m'],
-            'date' => ['nullable', 'date_format:Y-m-d'],
-            'wallet_id' => ['nullable', 'integer'],
-            'category_id' => ['nullable', 'integer'],
-            'type' => ['nullable', 'in:income,expense'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:500'],
+            'month'        => ['nullable', 'date_format:Y-m'],
+            'date'         => ['nullable', 'date_format:Y-m-d'],
+            'date_from'    => ['nullable', 'date_format:Y-m-d'],
+            'date_to'      => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
+            'wallet_id'    => ['nullable', 'integer'],
+            'category_id'  => ['nullable', 'integer'],
+            'category_ids' => ['nullable', 'string'],   // comma-separated integers
+            'type'         => ['nullable', 'in:income,expense'],
+            'search'       => ['nullable', 'string', 'max:200'],
+            'per_page'     => ['nullable', 'integer', 'min:1', 'max:200'],
         ]);
 
         $q = $request->user()->transactions()->with(['wallet:id,name', 'category:id,name,icon_key']);
 
+        // ---- Date range -------------------------------------------------------
         if ($d = $request->query('date')) {
             $q->where('transaction_date', $d);
+        } elseif ($request->filled('date_from') || $request->filled('date_to')) {
+            if ($request->filled('date_from')) {
+                $q->where('transaction_date', '>=', $request->query('date_from'));
+            }
+            if ($request->filled('date_to')) {
+                $q->where('transaction_date', '<=', $request->query('date_to'));
+            }
         } elseif ($m = $request->query('month')) {
             $start = Carbon::createFromFormat('Y-m-d', $m.'-01', 'Asia/Jakarta')->startOfMonth();
-            $q->whereBetween('transaction_date', [$start->toDateString(), $start->copy()->endOfMonth()->toDateString()]);
-        }
-        foreach (['wallet_id', 'category_id', 'type'] as $f) {
-            if ($request->filled($f)) {
-                $q->where($f, $request->query($f));
-            }
+            $q->whereBetween('transaction_date', [
+                $start->toDateString(),
+                $start->copy()->endOfMonth()->toDateString(),
+            ]);
         }
 
-        $perPage = (int) $request->query('per_page', 20);
+        // ---- Exact filters ----------------------------------------------------
+        if ($request->filled('wallet_id')) {
+            $q->where('wallet_id', $request->query('wallet_id'));
+        }
+        if ($request->filled('type')) {
+            $q->where('type', $request->query('type'));
+        }
+
+        // ---- Category filter: single id OR comma-separated ids ----------------
+        if ($request->filled('category_ids')) {
+            $ids = array_filter(
+                array_map('intval', explode(',', $request->query('category_ids'))),
+                fn ($v) => $v > 0
+            );
+            if (count($ids) === 1) {
+                $q->where('category_id', reset($ids));
+            } elseif (count($ids) > 1) {
+                $q->whereIn('category_id', $ids);
+            }
+        } elseif ($request->filled('category_id')) {
+            $q->where('category_id', $request->query('category_id'));
+        }
+
+        // ---- Full-text search over notes and related names --------------------
+        if ($search = $request->query('search')) {
+            $term = trim($search);
+            $q->where(function ($sub) use ($term) {
+                $sub->where('notes', 'ilike', "%{$term}%")
+                    ->orWhereHas('category', fn ($cq) => $cq->where('name', 'ilike', "%{$term}%"))
+                    ->orWhereHas('wallet',   fn ($wq) => $wq->where('name', 'ilike', "%{$term}%"));
+            });
+        }
+
+        $perPage = min((int) ($request->query('per_page') ?? 25), 200);
 
         return TransactionResource::collection(
             $q->orderByDesc('transaction_date')->orderByDesc('id')->paginate($perPage)
