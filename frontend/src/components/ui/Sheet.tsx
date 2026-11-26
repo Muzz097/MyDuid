@@ -5,6 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
@@ -106,10 +107,10 @@ export function Sheet({
 
   if (!rendered) return null
 
-  return (
+  return createPortal(
     <div
       className={cn(
-        'fixed inset-0 z-50 flex items-end justify-center',
+        'fixed inset-0 z-[60] flex items-end justify-center',
         isDrawer ? 'lg:items-stretch lg:justify-end' : 'lg:items-center lg:p-6',
       )}
     >
@@ -117,7 +118,7 @@ export function Sheet({
         type="button"
         aria-label="Tutup"
         className={cn(
-          'absolute inset-0 bg-ink/40 transition-opacity duration-[250ms] ease-[var(--ease-soft)] motion-reduce:transition-none',
+          'absolute inset-0 bg-ink/40 backdrop-blur-sm transition-opacity duration-[250ms] ease-[var(--ease-soft)] motion-reduce:transition-none',
           visible ? 'opacity-100' : 'opacity-0',
         )}
         onClick={onClose}
@@ -173,6 +174,7 @@ export function Sheet({
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

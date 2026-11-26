@@ -21,6 +21,7 @@ import {
   Wallet as WalletIconLucide,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { CategoryAvatar } from '@/components/ui/CategoryAvatar'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/Input'
@@ -28,6 +29,7 @@ import { MoneyInput } from '@/components/ui/MoneyInput'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { Sheet } from '@/components/ui/Sheet'
 import { useToast } from '@/components/ui/Toast'
+import { CategoryPickerField } from '@/features/transactions/CategoryPickerField'
 import {
   mapTransaction,
   type ApiTransaction,
@@ -36,7 +38,6 @@ import {
 import { api, ApiError } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { shiftJakartaDate, todayJakarta } from '@/lib/date'
-import { getIcon } from '@/lib/icons'
 import { formatRupiah } from '@/lib/money'
 import type { Category, TransactionType, Wallet } from '@/types'
 
@@ -65,17 +66,6 @@ type TransactionDraft = {
 type FieldErrors = Partial<
   Record<'type' | 'amount' | 'categoryId' | 'walletId' | 'date' | 'notes', string>
 >
-
-function CategoryBadgeIcon({
-  iconKey,
-  size = 20,
-}: {
-  iconKey?: string
-  size?: number
-}) {
-  const Icon = getIcon(iconKey ?? 'default')
-  return <Icon size={size} strokeWidth={1.75} aria-hidden />
-}
 
 function createDraft(tx: FetchedTransaction): TransactionDraft {
   return {
@@ -227,11 +217,6 @@ export function TransactionDetailPanel({
     setFieldErrors((prev) => ({ ...prev, type: undefined, categoryId: undefined }))
     setSubmitError(null)
   }
-
-  const typedCategories = useMemo(() => {
-    if (!draft) return []
-    return categories.filter((c) => c.type === draft.type)
-  }, [categories, draft])
 
   function validateDraft(d: TransactionDraft): FieldErrors {
     const errors: FieldErrors = {}
@@ -417,17 +402,13 @@ export function TransactionDetailPanel({
             <div className="rounded-[var(--radius-card)] border border-line/70 bg-muted/40 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span
-                    className={cn(
-                      'inline-flex size-11 shrink-0 items-center justify-center rounded-xl',
-                      transaction.type === 'income'
-                        ? 'bg-income-50 text-income-600 dark:bg-income-950/40 dark:text-income-400'
-                        : 'bg-expense-50 text-expense-500 dark:bg-expense-950/40 dark:text-expense-400',
-                    )}
-                    aria-hidden
-                  >
-                    <CategoryBadgeIcon iconKey={resolvedCategory?.iconKey} size={20} />
-                  </span>
+                  <CategoryAvatar
+                    categoryId={resolvedCategory?.id}
+                    name={resolvedCategory?.name}
+                    iconKey={resolvedCategory?.iconKey}
+                    type={transaction.type}
+                    size="lg"
+                  />
                   <div className="min-w-0">
                     <span
                       className={cn(
@@ -640,57 +621,21 @@ export function TransactionDetailPanel({
             />
 
             {/* Category (strictly filtered by draft.type) */}
-            <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-ink">Kategori</span>
-              {typedCategories.length === 0 ? (
-                <p className="rounded-[var(--radius-control)] border border-line bg-muted/40 px-3 py-2.5 text-xs text-ink-soft">
-                  Belum ada kategori aktif untuk jenis{' '}
-                  {draft.type === 'income' ? 'pemasukan' : 'pengeluaran'}.
-                </p>
-              ) : (
-                <div
-                  className="flex flex-wrap gap-2"
-                  role="group"
-                  aria-label="Pilih kategori"
-                >
-                  {typedCategories.map((cat) => {
-                    const Icon = getIcon(cat.iconKey)
-                    const selected = draft.categoryId === cat.id
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        disabled={saving}
-                        aria-pressed={selected}
-                        onClick={() => {
-                          setDraft((prev) =>
-                            prev ? { ...prev, categoryId: cat.id } : prev,
-                          )
-                          setFieldErrors((prev) => ({
-                            ...prev,
-                            categoryId: undefined,
-                          }))
-                          setSubmitError(null)
-                        }}
-                        className={cn(
-                          'inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-xs font-medium transition duration-150',
-                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 active:scale-[0.98]',
-                          selected
-                            ? 'border-brand-500 bg-brand-500 text-white shadow-sm'
-                            : 'border-line bg-card text-ink hover:bg-muted',
-                        )}
-                      >
-                        <Icon size={14} strokeWidth={1.9} aria-hidden />
-                        {cat.name}
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-              {fieldErrors.categoryId && (
-                <p className="text-sm text-danger-500">{fieldErrors.categoryId}</p>
-              )}
-            </div>
+            <CategoryPickerField
+              type={draft.type}
+              categories={categories}
+              value={draft.categoryId}
+              disabled={saving}
+              error={fieldErrors.categoryId}
+              onChange={(categoryId) => {
+                setDraft((prev) => (prev ? { ...prev, categoryId } : prev))
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  categoryId: undefined,
+                }))
+                setSubmitError(null)
+              }}
+            />
 
             {/* Wallet */}
             <div className="flex flex-col gap-1.5">

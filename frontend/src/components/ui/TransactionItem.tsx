@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
+import { CategoryAvatar } from '@/components/ui/CategoryAvatar'
 import { MoneyText } from '@/components/ui/MoneyText'
 import { cn } from '@/lib/cn'
-import { iconRegistry } from '@/lib/icons'
 import type { Category, Transaction, Wallet } from '@/types'
 
 function formatShortDate(iso: string): string {
@@ -31,25 +31,17 @@ export function TransactionItem({
   compact = false,
 }: TransactionItemProps) {
   const title = transaction.notes?.trim() || category?.name || 'Transaksi'
-  const iconKey = category?.iconKey ?? 'default'
-  const TxIcon = iconRegistry[iconKey] ?? iconRegistry.default
-  const isIncome = transaction.type === 'income'
-
-  const toneClass = isIncome
-    ? 'bg-income-50 text-income-600 dark:bg-income-950/40 dark:text-income-400'
-    : 'bg-expense-50 text-expense-500 dark:bg-expense-950/40 dark:text-expense-400'
 
   const content = (
     <>
-      <span
-        className={cn(
-          'inline-flex size-10 shrink-0 items-center justify-center rounded-xl transition duration-150 group-hover:scale-105',
-          toneClass,
-        )}
-        aria-hidden
-      >
-        <TxIcon size={19} strokeWidth={1.75} />
-      </span>
+      <CategoryAvatar
+        categoryId={category?.id ?? transaction.categoryId}
+        name={category?.name}
+        iconKey={category?.iconKey ?? 'default'}
+        type={transaction.type}
+        size="md"
+        className="group-hover:scale-105 motion-reduce:group-hover:scale-100"
+      />
 
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-ink tracking-tight">
@@ -86,8 +78,9 @@ export function TransactionItem({
         type="button"
         onClick={onClick}
         className={cn(
-          'group flex min-h-12 w-full items-center gap-3 text-left transition-colors duration-150',
-          'hover:bg-muted/40 active:bg-muted/60',
+          'group flex min-h-12 w-full items-center gap-3 text-left transition duration-150',
+          'hover:bg-muted/45 active:scale-[0.992] active:bg-muted/65',
+          'motion-reduce:transition-none motion-reduce:active:scale-100',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400',
           compact ? 'py-2.5' : 'py-3.5',
           className,

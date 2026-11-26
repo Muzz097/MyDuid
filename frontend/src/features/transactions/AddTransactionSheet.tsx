@@ -4,6 +4,7 @@ import { Chip } from '@/components/ui/Chip'
 import { Input } from '@/components/ui/Input'
 import { Sheet } from '@/components/ui/Sheet'
 import { useToast } from '@/components/ui/Toast'
+import { CategoryPickerField } from '@/features/transactions/CategoryPickerField'
 import { Keypad } from '@/features/transactions/Keypad'
 import { cn } from '@/lib/cn'
 import { getIcon } from '@/lib/icons'
@@ -84,15 +85,6 @@ export function AddTransactionSheet({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const amount = digits === '' ? 0 : Number(digits)
-
-  const typedCategories = useMemo(() => {
-    const filtered = categories.filter((c) => c.type === type)
-    const lastId = readStoredId(LAST_CATEGORY_KEY)
-    if (lastId == null) return filtered
-    const last = filtered.find((c) => c.id === lastId)
-    if (!last) return filtered
-    return [last, ...filtered.filter((c) => c.id !== lastId)]
-  }, [categories, type])
 
   const wasOpenRef = useRef(false)
 
@@ -260,34 +252,12 @@ export function AddTransactionSheet({
           {formatRupiah(amount)}
         </p>
 
-        <div>
-          <p className="mb-2 text-sm font-medium text-ink">Kategori</p>
-          <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {typedCategories.map((category) => {
-              const Icon = getIcon(category.iconKey)
-              const selected = category.id === categoryId
-              return (
-                <Chip
-                  key={category.id}
-                  selected={selected}
-                  onClick={() => setCategoryId(category.id)}
-                  icon={<Icon size={16} strokeWidth={1.75} aria-hidden />}
-                  className={cn(
-                    'shrink-0',
-                    selected &&
-                      type === 'expense' &&
-                      'bg-expense-500 text-white',
-                    selected &&
-                      type === 'income' &&
-                      'bg-income-500 text-white',
-                  )}
-                >
-                  {category.name}
-                </Chip>
-              )
-            })}
-          </div>
-        </div>
+        <CategoryPickerField
+          type={type}
+          categories={categories}
+          value={categoryId}
+          onChange={(id) => setCategoryId(id)}
+        />
 
         {!lockWallet && (
           <div>
