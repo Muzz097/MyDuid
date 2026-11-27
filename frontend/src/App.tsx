@@ -14,6 +14,7 @@ import { TransactionsPage } from '@/pages/TransactionsPage'
 import { BudgetsPage } from '@/pages/BudgetsPage'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { CategoriesPage } from '@/pages/CategoriesPage'
+import { ReportsPage } from '@/pages/ReportsPage'
 import { WalletsPage } from '@/pages/WalletsPage'
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/transaksi" element={<TransactionsPage />} />
               <Route path="/kalender" element={<CalendarPage />} />
+              <Route path="/laporan" element={<ReportsPage />} />
               <Route path="/dompet" element={<WalletsPage />} />
               <Route path="/anggaran" element={<BudgetsPage />} />
               <Route path="/kategori" element={<CategoriesPage />} />

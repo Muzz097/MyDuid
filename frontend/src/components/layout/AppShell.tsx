@@ -67,12 +67,7 @@ const sidebarGroups: NavGroup[] = [
     title: 'Analisis',
     items: [
       { to: '/kalender', label: 'Kalender', icon: Calendar },
-      {
-        label: 'Laporan',
-        icon: BarChart3,
-        disabled: true,
-        badge: 'Segera Hadir',
-      },
+      { to: '/laporan', label: 'Laporan', icon: BarChart3 },
     ],
   },
   {
@@ -96,6 +91,8 @@ function getPageMeta(pathname: string): { title: string; subtitle: string } {
       return { title: 'Transaksi', subtitle: 'Kelola dan lacak riwayat transaksi' }
     case '/kalender':
       return { title: 'Kalender Keuangan', subtitle: 'Pantau arus kas harian dan riwayat tanggal' }
+    case '/laporan':
+      return { title: 'Laporan', subtitle: 'Ringkasan, arus kas, dan cerita keuangan Anda' }
     case '/dompet':
       return { title: 'Dompet', subtitle: 'Atur rekening dan sumber dana' }
     case '/anggaran':
@@ -273,6 +270,21 @@ function AppShellInner() {
 
           {/* Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <NavLink
+              to="/laporan"
+              className={({ isActive }) =>
+                cn(
+                  'inline-flex size-9 items-center justify-center rounded-[var(--radius-control)] transition duration-200 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400',
+                  isActive
+                    ? 'bg-brand-500/10 text-brand-600 dark:bg-brand-500/20 dark:text-brand-400'
+                    : 'text-ink-soft hover:bg-muted hover:text-ink',
+                )
+              }
+              title="Laporan Keuangan"
+              aria-label="Laporan Keuangan"
+            >
+              <BarChart3 size={18} strokeWidth={1.75} aria-hidden />
+            </NavLink>
             <NavLink
               to="/kalender"
               className={({ isActive }) =>

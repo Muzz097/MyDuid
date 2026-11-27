@@ -1,9 +1,11 @@
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
   type UIEvent,
 } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowLeftRight,
@@ -34,6 +36,7 @@ import {
   type FetchedTransfer,
   type TransactionFilters,
 } from '@/features/transactions/useTransactionQuery'
+import { isValidIsoDate } from '@/features/reports/periodUtils'
 import { formatGroupLabel } from '@/lib/date'
 import { useStore } from '@/lib/store'
 import type { Wallet } from '@/types'
@@ -150,13 +153,77 @@ function TransactionSkeletonGroup() {
   )
 }
 
+function filtersFromSearchParams(params: URLSearchParams): TransactionFilters {
+  const next: TransactionFilters = { ...DEFAULT_FILTERS }
+
+  const singleDate = params.get('date')
+  const rawFrom = params.get('from')
+  const rawTo = params.get('to')
+
+  if (isValidIsoDate(singleDate)) {
+    next.period = 'custom'
+    next.dateFrom = singleDate
+    next.dateTo = singleDate
+  } else if (isValidIsoDate(rawFrom) || isValidIsoDate(rawTo)) {
+    next.period = 'custom'
+    next.dateFrom = isValidIsoDate(rawFrom) ? rawFrom : ''
+    next.dateTo = isValidIsoDate(rawTo) ? rawTo : ''
+    if (next.dateFrom && next.dateTo && next.dateFrom > next.dateTo) {
+      next.dateTo = next.dateFrom
+    }
+  }
+
+  const rawType = params.get('type')
+  if (rawType === 'income' || rawType === 'expense') {
+    next.type = rawType
+  }
+
+  const rawWalletId = params.get('wallet_id')
+  if (rawWalletId) {
+    const parsed = Number(rawWalletId)
+    if (Number.isInteger(parsed) && parsed > 0) {
+      next.walletId = parsed
+    }
+  }
+
+  const rawCatIds = params.get('category_ids') ?? params.get('category_id')
+  if (rawCatIds) {
+    const ids = rawCatIds
+      .split(',')
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isInteger(n) && n > 0)
+    if (ids.length > 0) {
+      next.categoryIds = [...new Set(ids)]
+    }
+  }
+
+  const rawSearch = params.get('search')
+  if (rawSearch) {
+    next.search = rawSearch.slice(0, 200)
+  }
+
+  return next
+}
+
 // ---- Main page component ----------------------------------------------
 
 export function TransactionsPage() {
   const { categories, wallets, refresh } = useStore()
   const { openAddTransaction } = useAddTransaction()
+  const [searchParams] = useSearchParams()
+  const searchKey = searchParams.toString()
+  const prevSearchKeyRef = useRef(searchKey)
 
-  const [filters, setFilters] = useState<TransactionFilters>(DEFAULT_FILTERS)
+  const [filters, setFilters] = useState<TransactionFilters>(() =>
+    filtersFromSearchParams(searchParams),
+  )
+
+  useEffect(() => {
+    if (prevSearchKeyRef.current !== searchKey) {
+      prevSearchKeyRef.current = searchKey
+      setFilters(filtersFromSearchParams(searchParams))
+    }
+  }, [searchKey, searchParams])
   const [selectedTransaction, setSelectedTransaction] =
     useState<FetchedTransaction | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
