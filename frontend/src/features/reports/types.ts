@@ -62,3 +62,49 @@ export type ReportStory = {
   } | null
   reasons: Record<string, string>
 }
+
+export type ReportCategoryItem = {
+  category_id: number
+  name: string
+  icon_key: string | null
+  amount: number
+  count: number
+  average: number
+  share_percent: number
+  change_percent: number | null
+}
+
+export type ReportCategoriesResponse = {
+  by_amount: ReportCategoryItem[]
+  by_count: ReportCategoryItem[]
+}
+
+export type TrendMonthItem = {
+  month: string
+  income: number
+  expense: number
+  is_partial: boolean
+}
+
+export type WeekdayRhythmItem = {
+  iso_weekday: number
+  key: string
+  total: number
+  count: number
+  average_per_occurrence: number
+}
+
+export type ReportTrendsResponse = {
+  monthly: TrendMonthItem[]
+  average_expense: number | null
+  highest_expense_month: {
+    month: string
+    expense: number
+  } | null
+  lowest_expense_month: {
+    month: string
+    expense: number
+  } | null
+  month_over_month_change_percent: number | null
+  weekday_rhythm: WeekdayRhythmItem[]
+}

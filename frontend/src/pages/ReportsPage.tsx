@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PageHeaderMotion, SectionMotion } from '@/components/ui/Motion'
+import { CategoriesTabSection } from '@/features/reports/CategoriesTabSection'
 import { FinancialRhythmSection } from '@/features/reports/FinancialRhythmSection'
 import { MoneyStorySection } from '@/features/reports/MoneyStorySection'
 import { ReportPeriodBar } from '@/features/reports/ReportPeriodBar'
 import { ReportTabs } from '@/features/reports/ReportTabs'
 import { SummaryCardsSection } from '@/features/reports/SummaryCardsSection'
+import { TrendsTabSection } from '@/features/reports/TrendsTabSection'
 import {
   resolveReportPeriod,
   resolveReportTab,
@@ -38,10 +40,11 @@ export function ReportsPage() {
     setSearchParams({ from, to, tab: nextTab })
   }
 
-  const summaryQuery = useReportData<ReportSummary>('/reports/summary', {
-    from,
-    to,
-  })
+  const summaryQuery = useReportData<ReportSummary>(
+    '/reports/summary',
+    { from, to },
+    activeTab === 'summary',
+  )
 
   return (
     <div className="space-y-5 pb-8">
@@ -64,28 +67,44 @@ export function ReportsPage() {
         aria-labelledby={`report-tab-${activeTab}`}
         className="space-y-6"
       >
-        <SectionMotion delay={0}>
-          <SummaryCardsSection
-            summary={summaryQuery.data}
-            loading={summaryQuery.loading}
-            error={summaryQuery.error}
-            onRetry={summaryQuery.retry}
-            from={from}
-            to={to}
-          />
-        </SectionMotion>
+        {activeTab === 'summary' && (
+          <>
+            <SectionMotion delay={0}>
+              <SummaryCardsSection
+                summary={summaryQuery.data}
+                loading={summaryQuery.loading}
+                error={summaryQuery.error}
+                onRetry={summaryQuery.retry}
+                from={from}
+                to={to}
+              />
+            </SectionMotion>
 
-        <SectionMotion delay={40}>
-          <FinancialRhythmSection from={from} to={to} />
-        </SectionMotion>
+            <SectionMotion delay={40}>
+              <FinancialRhythmSection from={from} to={to} />
+            </SectionMotion>
 
-        <SectionMotion delay={80}>
-          <MoneyStorySection
-            from={from}
-            to={to}
-            summary={summaryQuery.data}
-          />
-        </SectionMotion>
+            <SectionMotion delay={80}>
+              <MoneyStorySection
+                from={from}
+                to={to}
+                summary={summaryQuery.data}
+              />
+            </SectionMotion>
+          </>
+        )}
+
+        {activeTab === 'categories' && (
+          <SectionMotion delay={0}>
+            <CategoriesTabSection from={from} to={to} />
+          </SectionMotion>
+        )}
+
+        {activeTab === 'trends' && (
+          <SectionMotion delay={0}>
+            <TrendsTabSection />
+          </SectionMotion>
+        )}
       </div>
     </div>
   )
