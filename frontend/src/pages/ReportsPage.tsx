@@ -2,12 +2,14 @@ import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PageHeaderMotion, SectionMotion } from '@/components/ui/Motion'
 import { CategoriesTabSection } from '@/features/reports/CategoriesTabSection'
+import { ComparisonTabSection } from '@/features/reports/ComparisonTabSection'
 import { FinancialRhythmSection } from '@/features/reports/FinancialRhythmSection'
 import { MoneyStorySection } from '@/features/reports/MoneyStorySection'
 import { ReportPeriodBar } from '@/features/reports/ReportPeriodBar'
 import { ReportTabs } from '@/features/reports/ReportTabs'
 import { SummaryCardsSection } from '@/features/reports/SummaryCardsSection'
 import { TrendsTabSection } from '@/features/reports/TrendsTabSection'
+import { WalletsTabSection } from '@/features/reports/WalletsTabSection'
 import {
   resolveReportPeriod,
   resolveReportTab,
@@ -103,6 +105,18 @@ export function ReportsPage() {
         {activeTab === 'trends' && (
           <SectionMotion delay={0}>
             <TrendsTabSection />
+          </SectionMotion>
+        )}
+
+        {activeTab === 'wallets' && (
+          <SectionMotion delay={0}>
+            <WalletsTabSection from={from} to={to} />
+          </SectionMotion>
+        )}
+
+        {activeTab === 'compare' && (
+          <SectionMotion delay={0}>
+            <ComparisonTabSection from={from} to={to} />
           </SectionMotion>
         )}
       </div>
