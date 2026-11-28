@@ -66,7 +66,8 @@ export function resolveReportTab(rawTab: string | null): ReportTab {
     rawTab === 'categories' ||
     rawTab === 'trends' ||
     rawTab === 'wallets' ||
-    rawTab === 'compare'
+    rawTab === 'compare' ||
+    rawTab === 'wrapped'
   ) {
     return rawTab
   }

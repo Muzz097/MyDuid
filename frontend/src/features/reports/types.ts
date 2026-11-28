@@ -1,4 +1,4 @@
-export type ReportTab = 'summary' | 'categories' | 'trends' | 'wallets' | 'compare'
+export type ReportTab = 'summary' | 'categories' | 'trends' | 'wallets' | 'compare' | 'wrapped'
 
 export type ComparisonBasis =
   | 'previous_month'

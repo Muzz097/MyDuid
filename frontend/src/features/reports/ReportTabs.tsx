@@ -14,6 +14,7 @@ export const REPORT_TABS: ReportTabItem[] = [
   { id: 'trends', label: 'Tren' },
   { id: 'wallets', label: 'Dompet' },
   { id: 'compare', label: 'Bandingkan' },
+  { id: 'wrapped', label: 'Wrapped' },
 ]
 
 export type ReportTabsProps = {

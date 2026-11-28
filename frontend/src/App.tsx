@@ -16,6 +16,7 @@ import { CalendarPage } from '@/pages/CalendarPage'
 import { CategoriesPage } from '@/pages/CategoriesPage'
 import { ReportsPage } from '@/pages/ReportsPage'
 import { WalletsPage } from '@/pages/WalletsPage'
+import { WrappedPlayer } from '@/features/wrapped/WrappedPlayer'
 
 export default function App() {
   const { loading: authLoading } = useAuth()
@@ -37,6 +38,7 @@ export default function App() {
           </Route>
 
           <Route element={<ProtectedRoute />}>
+            <Route path="/laporan/wrapped/:month" element={<WrappedPlayer />} />
             <Route element={<AppShell />}>
               <Route path="/" element={<DashboardPage />} />
               <Route path="/transaksi" element={<TransactionsPage />} />

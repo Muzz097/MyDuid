@@ -12,6 +12,7 @@ use App\Http\Controllers\TransferController;
 use App\Http\Controllers\WalletCardImageController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\WalletGoalController;
+use App\Http\Controllers\WrappedController;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -49,4 +50,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/reports/wallets', [ReportController::class, 'wallets']);
     Route::get('/reports/comparison', [ReportController::class, 'comparison']);
     Route::get('/reports/story', [ReportController::class, 'story']);
+    Route::get('/reports/wrapped/months', [WrappedController::class, 'months']);
+    Route::get('/reports/wrapped', [WrappedController::class, 'show']);
 });

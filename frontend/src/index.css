@@ -490,3 +490,94 @@
     filter: none !important;
   }
 }
+
+@page {
+  size: A4;
+  margin: 14mm 14mm 16mm 14mm;
+}
+
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide app shell navigation, top header, mobile bottom bar, and interactive controls */
+  aside,
+  body > div > div > div > header,
+  nav[aria-label="Navigasi bawah"],
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-only-document thead {
+    display: table-header-group;
+  }
+
+  .print-only-document tr {
+    break-inside: avoid;
+  }
+}
+
+@keyframes wrapped-enter {
+  from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes wrapped-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+.wrapped-stagger-1 {
+  animation: wrapped-enter 0.35s var(--ease-soft) both;
+}
+
+.wrapped-stagger-2 {
+  animation: wrapped-enter 0.42s var(--ease-soft) 90ms both;
+}
+
+.wrapped-stagger-3 {
+  animation: wrapped-enter 0.45s var(--ease-soft) 180ms both;
+}
+
+.wrapped-progress-fill {
+  animation: wrapped-progress 6s linear forwards;
+}
+
+@keyframes wrapped-tile-flip {
+  from {
+    opacity: 0.35;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.wrapped-tile-flip {
+  animation: wrapped-tile-flip 250ms var(--ease-soft) both;
+}
+
+@keyframes wrapped-sheen {
+  0%, 100% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.24;
+  }
+}
+
+.wrapped-countdown-sheen {
+  animation: wrapped-sheen 5s ease-in-out infinite;
+}

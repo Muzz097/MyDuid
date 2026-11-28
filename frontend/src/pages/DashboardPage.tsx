@@ -26,6 +26,7 @@ import { MonthlySummaryCards } from '@/features/dashboard/MonthlySummaryCards'
 import { CashFlowChart } from '@/features/dashboard/CashFlowChart'
 import { CategoryComposition } from '@/features/dashboard/CategoryComposition'
 import { BudgetProgressCard, type DashboardBudget } from '@/features/dashboard/BudgetProgressCard'
+import { WrappedHomeCard } from '@/features/wrapped/WrappedHomeCard'
 
 function currentMonth(): string {
   return new Intl.DateTimeFormat('en-CA', {
@@ -106,6 +107,8 @@ export function DashboardPage() {
     <div className="space-y-6 pb-6">
       {/* 1. Personal Greeting / Header */}
       <DashboardGreetingHeader />
+
+      <WrappedHomeCard />
 
       {/* 2. Hero Total Aset Card */}
       <SectionMotion as="section" aria-label="Total Aset" delay={0}>

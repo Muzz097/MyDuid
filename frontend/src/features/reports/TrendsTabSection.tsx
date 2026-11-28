@@ -55,8 +55,18 @@ function formatFullMonthLabel(ym: string): string {
   })
 }
 
-export function TrendsTabSection() {
-  const [months, setMonths] = useState<number>(6)
+export type TrendsTabSectionProps = {
+  months?: number
+  onChangeMonths?: (months: number) => void
+}
+
+export function TrendsTabSection({
+  months: controlledMonths,
+  onChangeMonths,
+}: TrendsTabSectionProps = {}) {
+  const [internalMonths, setInternalMonths] = useState<number>(6)
+  const months = controlledMonths ?? internalMonths
+  const setMonths = onChangeMonths ?? setInternalMonths
   const { data, loading, error, retry } = useReportData<ReportTrendsResponse>(
     '/reports/trends',
     { months },
